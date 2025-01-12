@@ -8,6 +8,7 @@ import {
 import { Product } from '@/types/product';
 import SizeSelector from '../../product-detail/SizeSelector';
 import PersonalizationButton from '../../product-detail/PersonalizationButton';
+import { getAvailableSizes } from '@/utils/stockValidation';
 
 interface AddItemDialogProps {
   open: boolean;
@@ -30,6 +31,8 @@ const AddItemDialog = ({
   onPersonalizationChange,
   onConfirm,
 }: AddItemDialogProps) => {
+  const availableSizes = droppedItem ? getAvailableSizes(droppedItem) : [];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] bg-white/95">
@@ -41,8 +44,9 @@ const AddItemDialog = ({
         <div className="space-y-6">
           <SizeSelector
             selectedSize={selectedSize}
-            sizes={['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL']}
+            sizes={availableSizes}
             onSizeSelect={onSizeSelect}
+            isCostume={droppedItem?.itemgroup_product === 'costumes'}
           />
           
           <PersonalizationButton
