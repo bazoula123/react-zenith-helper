@@ -17,6 +17,14 @@ const SizeSelector = ({ selectedSize, sizes, onSizeSelect, isCostume = false }: 
     return size;
   };
 
+  if (sizes.length === 0) {
+    return (
+      <div className="text-red-500 text-sm">
+        Aucune taille disponible pour ce produit
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">

@@ -9,9 +9,9 @@ import PersonalizationInput from '@/components/cart/PersonalizationInput';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag } from 'lucide-react';
 import BoxSelectionDialog from './BoxSelectionDialog';
-import { getAvailableStockForSize } from '@/utils/stockValidation';
+import { getAvailableStockForSize, getAvailableSizes } from '@/utils/stockValidation';
 import GiftBoxSelection from './GiftBoxSelection';
-import SizeSelector from './SizeSelector';  // Added this import
+import SizeSelector from './SizeSelector';
 
 interface ProductDetailContainerProps {
   product: Product;
@@ -113,15 +113,7 @@ const ProductDetailContainer = ({ product }: ProductDetailContainerProps) => {
     }
   };
 
-  const availableSizes = product.itemgroup_product === 'costumes' 
-    ? Object.entries(product.sizes)
-        .filter(([key, stock]) => ['48', '50', '52', '54', '56', '58'].includes(key) && stock > 0)
-        .map(([size]) => size)
-    : Object.entries(product.sizes)
-        .filter(([key, stock]) => ['s', 'm', 'l', 'xl', 'xxl', '3xl'].includes(key.toLowerCase()) && stock > 0)
-        .map(([size]) => size.toUpperCase());
-
-  const showPersonalization = !(product.category_product === "homme" && product.itemgroup_product === "costumes");
+  const availableSizes = getAvailableSizes(product);
 
   return (
     <div className="grid lg:grid-cols-2 gap-12">
@@ -142,22 +134,13 @@ const ProductDetailContainer = ({ product }: ProductDetailContainerProps) => {
           price={product.price}
         />
 
-        {showPersonalization && (
-          <div className="mt-6">
-            <PersonalizationInput
-              itemId={product.id}
-              onUpdate={setPersonalizationText}
-            />
-          </div>
-        )}
-        
         <div className="h-px bg-gray-200" />
 
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-base font-semibold text-gray-900">
-                Taille {selectedSize ? `sélectionnée: ${selectedSize} (Stock: ${getAvailableStockForSize(product, selectedSize)})` : ''}
+                Taille {selectedSize ? `sélectionnée: ${selectedSize}` : ''}
               </span>
               <button className="text-xs text-[#700100] hover:underline">
                 Guide des tailles
