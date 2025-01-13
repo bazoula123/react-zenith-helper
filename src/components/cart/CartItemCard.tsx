@@ -3,6 +3,7 @@ import { MinusCircle, PlusCircle, Trash2, Tag, Edit2, Package, Gift } from 'luci
 import { motion } from 'framer-motion';
 import { CartItem } from './CartProvider';
 import PersonalizationInput from './PersonalizationInput';
+import { calculateDiscountedPrice } from '@/utils/priceCalculations';
 
 interface CartItemCardProps {
   item: CartItem;
@@ -12,6 +13,8 @@ interface CartItemCardProps {
 
 const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) => {
   const packType = sessionStorage.getItem('selectedPackType') || 'aucun';
+  const hasDiscount = item.discount_product && item.discount_product !== "" && !isNaN(parseFloat(item.discount_product));
+  const finalPrice = hasDiscount ? calculateDiscountedPrice(item.price, item.discount_product!) : item.price;
   
   return (
     <motion.div 
@@ -88,8 +91,20 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-base sm:text-lg font-medium text-[#1A1F2C]">
-                {(item.price * item.quantity).toFixed(2)} TND
+              <div className="text-base sm:text-lg font-medium">
+                {hasDiscount && (
+                  <div className="flex flex-col items-end">
+                    <span className="text-[#700100]">{(finalPrice * item.quantity).toFixed(2)} TND</span>
+                    <span className="text-sm text-gray-500 line-through">
+                      {(item.price * item.quantity).toFixed(2)} TND
+                    </span>
+                  </div>
+                )}
+                {!hasDiscount && (
+                  <span className="text-[#1A1F2C]">
+                    {(finalPrice * item.quantity).toFixed(2)} TND
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => onRemove(item.id)}
