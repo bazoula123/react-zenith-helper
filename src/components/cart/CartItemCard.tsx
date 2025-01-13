@@ -35,6 +35,12 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
             <h3 className="text-base sm:text-lg font-serif text-[#1A1F2C] hover:text-[#700100] transition-colors cursor-pointer truncate max-w-full">
               {item.name}
             </h3>
+            {hasDiscount && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                <Tag size={12} />
+                -{item.discount_product}%
+              </span>
+            )}
             <div className="flex flex-wrap gap-1">
               {packType !== 'aucun' && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#700100]/10 text-[#700100] whitespace-nowrap">
@@ -50,7 +56,6 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
               )}
             </div>
           </div>
-          <p className="text-[#8E9196] text-xs sm:text-sm mb-2">Réf: {item.id.toString().padStart(6, '0')}</p>
           
           {(item.size || item.color) && (
             <div className="flex flex-wrap gap-2 mb-2">
@@ -92,17 +97,16 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
             </div>
             <div className="flex items-center gap-3">
               <div className="text-base sm:text-lg font-medium">
-                {hasDiscount && (
+                {hasDiscount ? (
                   <div className="flex flex-col items-end">
                     <span className="text-[#700100]">{(finalPrice * item.quantity).toFixed(2)} TND</span>
                     <span className="text-sm text-gray-500 line-through">
                       {(item.price * item.quantity).toFixed(2)} TND
                     </span>
                   </div>
-                )}
-                {!hasDiscount && (
+                ) : (
                   <span className="text-[#1A1F2C]">
-                    {(finalPrice * item.quantity).toFixed(2)} TND
+                    {(item.price * item.quantity).toFixed(2)} TND
                   </span>
                 )}
               </div>
