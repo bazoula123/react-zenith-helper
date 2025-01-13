@@ -11,13 +11,14 @@ import { ShoppingBag } from 'lucide-react';
 import BoxSelectionDialog from './BoxSelectionDialog';
 import { getAvailableStockForSize } from '@/utils/stockValidation';
 import GiftBoxSelection from './GiftBoxSelection';
-import SizeSelector from './SizeSelector';  // Added this import
+import SizeSelector from './SizeSelector';
 
 interface ProductDetailContainerProps {
   product: Product;
+  onProductAdded?: (productName: string) => void;
 }
 
-const ProductDetailContainer = ({ product }: ProductDetailContainerProps) => {
+const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContainerProps) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -95,10 +96,7 @@ const ProductDetailContainer = ({ product }: ProductDetailContainerProps) => {
       withBox: withBox,
     });
 
-    toast({
-      title: "Produit ajouté au panier",
-      description: `${quantity} x ${product.name} (Taille: ${selectedSize})`,
-    });
+    onProductAdded?.(product.name);
   };
 
   const handleInitialAddToCart = () => {
@@ -140,6 +138,7 @@ const ProductDetailContainer = ({ product }: ProductDetailContainerProps) => {
           name={product.name}
           description={product.description}
           price={product.price}
+          discount={product.discount_product}
         />
 
         {showPersonalization && (

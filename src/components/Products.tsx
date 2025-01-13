@@ -17,7 +17,7 @@ const Products = () => {
     },
     [
       Autoplay({
-        delay: 4000,
+        delay: 2500,
         stopOnInteraction: false,
         stopOnMouseEnter: true,
       }),
@@ -58,7 +58,7 @@ const Products = () => {
   return (
     <div className="products-wrapper">
       <div className="products-container">
-        <h1 className="products-title">Nos produits</h1>
+        <h1 className="products-title">Nouveauté</h1>
         <Categories />
         <div className="embla" ref={emblaRef}>
           <div className="embla__container">
