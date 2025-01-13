@@ -83,7 +83,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             : i
         );
       }
-      return [...prevItems, item];
+      // Calculate discounted price if applicable
+      const finalPrice = item.discount_product ? calculateDiscountedPrice(item.price, item.discount_product) : item.price;
+      return [...prevItems, { ...item, price: finalPrice }];
     });
   };
 
@@ -92,6 +94,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateQuantity = (id: number, quantity: number) => {
+    if (quantity < 1) return;
     setCartItems(prevItems =>
       prevItems.map(item =>
         item.id === id
@@ -117,9 +120,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const calculateTotal = () => {
     const itemsSubtotal = cartItems.reduce((sum, item) => {
-      const itemPrice = item.discount_product 
-        ? calculateDiscountedPrice(item.price, item.discount_product)
-        : item.price;
+      const itemPrice = item.price; // Price is already discounted when added to cart
       return sum + (itemPrice * item.quantity);
     }, 0);
     
