@@ -95,9 +95,12 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
             </div>
             <div className="flex items-center gap-3">
               <div className="text-base sm:text-lg font-medium">
-                {hasDiscount ? (
+                {hasDiscount && item.originalPrice ? (
                   <div className="flex flex-col items-end">
                     <span className="text-[#700100]">{(item.price * item.quantity).toFixed(2)} TND</span>
+                    <span className="text-sm text-gray-500 line-through">
+                      {(item.originalPrice * item.quantity).toFixed(2)} TND
+                    </span>
                   </div>
                 ) : (
                   <span className="text-[#1A1F2C]">

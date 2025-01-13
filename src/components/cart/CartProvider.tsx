@@ -7,6 +7,7 @@ export interface CartItem {
   id: number;
   name: string;
   price: number;
+  originalPrice?: number;
   quantity: number;
   image: string;
   size?: string;
@@ -15,6 +16,8 @@ export interface CartItem {
   fromPack?: boolean;
   withBox?: boolean;
   discount_product?: string;
+  type_product?: string;
+  itemgroup_product?: string;
 }
 
 interface CartContextType {
@@ -83,9 +86,18 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             : i
         );
       }
+
       // Calculate discounted price if applicable
-      const finalPrice = item.discount_product ? calculateDiscountedPrice(item.price, item.discount_product) : item.price;
-      return [...prevItems, { ...item, price: finalPrice }];
+      const originalPrice = item.price;
+      const finalPrice = item.discount_product 
+        ? calculateDiscountedPrice(originalPrice, item.discount_product)
+        : originalPrice;
+
+      return [...prevItems, { 
+        ...item, 
+        price: finalPrice,
+        originalPrice: item.discount_product ? originalPrice : undefined
+      }];
     });
   };
 
@@ -120,8 +132,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const calculateTotal = () => {
     const itemsSubtotal = cartItems.reduce((sum, item) => {
-      const itemPrice = item.price; // Price is already discounted when added to cart
-      return sum + (itemPrice * item.quantity);
+      return sum + (item.price * item.quantity);
     }, 0);
     
     const boxTotal = cartItems.reduce((sum, item) => 
