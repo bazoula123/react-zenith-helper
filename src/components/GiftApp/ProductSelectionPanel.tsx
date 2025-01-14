@@ -36,23 +36,27 @@ const ProductSelectionPanel = ({
 
   const getAvailableCategories = () => {
     console.log('Getting categories for pack:', packType, 'container:', selectedContainerIndex);
-    
+    console.log('Current selected items:', selectedItems);
+
     if (packType === 'Pack Prestige') {
-      // Count how many items of each type we have
+      // Get counts of each item type
       const chemiseCount = selectedItems.filter(item => item.itemgroup_product === 'chemises').length;
       const beltCount = selectedItems.filter(item => item.itemgroup_product === 'ceintures').length;
-      
-      // First slot must be chemise
-      if (selectedContainerIndex === 0) {
-        return chemiseCount === 0 ? [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }] : [];
+      const cravateCount = selectedItems.filter(item => item.itemgroup_product === 'cravates').length;
+
+      console.log('Current counts - Chemises:', chemiseCount, 'Belts:', beltCount, 'Cravates:', cravateCount);
+
+      // First slot (index 0): Only chemises if none selected
+      if (selectedContainerIndex === 0 && chemiseCount === 0) {
+        return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
       }
-      // Second slot must be belt, but only if we have exactly one chemise
-      else if (selectedContainerIndex === 1) {
-        return chemiseCount === 1 && beltCount === 0 ? [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }] : [];
+      // Second slot (index 1): Only belts if we have exactly one chemise and no belt
+      else if (selectedContainerIndex === 1 && chemiseCount === 1 && beltCount === 0) {
+        return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
       }
-      // Third slot must be cravate, but only if we have exactly one chemise and one belt
-      else if (selectedContainerIndex === 2) {
-        return chemiseCount === 1 && beltCount === 1 ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }] : [];
+      // Third slot (index 2): Only cravates if we have one chemise, one belt, and no cravate
+      else if (selectedContainerIndex === 2 && chemiseCount === 1 && beltCount === 1 && cravateCount === 0) {
+        return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
       }
       return [];
     }
@@ -135,10 +139,7 @@ const ProductSelectionPanel = ({
 
         // Filter out items that are already in the pack
         filteredProducts = filteredProducts.filter(product => 
-          !selectedItems.some(item => 
-            item.id === product.id && 
-            item.itemgroup_product === product.itemgroup_product
-          )
+          !selectedItems.some(item => item.id === product.id)
         );
       }
 
