@@ -37,6 +37,24 @@ const ProductSelectionPanel = ({
   const getAvailableCategories = () => {
     console.log('Getting categories for pack:', packType, 'container:', selectedContainerIndex);
     
+    if (packType === 'Pack Prestige') {
+      // Check if we're following the correct order
+      const hasChemise = selectedItems.some(item => item.itemgroup_product === 'chemises');
+      const hasBelt = selectedItems.some(item => item.itemgroup_product === 'ceintures');
+      
+      if (selectedContainerIndex === 0) {
+        // First slot: only allow chemises if none selected
+        return !hasChemise ? [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }] : [];
+      } else if (selectedContainerIndex === 1) {
+        // Second slot: only allow belts if chemise is selected and no belt yet
+        return hasChemise && !hasBelt ? [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }] : [];
+      } else if (selectedContainerIndex === 2) {
+        // Third slot: only allow cravates if both chemise and belt are selected
+        return hasChemise && hasBelt ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }] : [];
+      }
+      return [];
+    }
+
     const categories = {
       'Pack Prestige': [
         [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }],
@@ -80,7 +98,7 @@ const ProductSelectionPanel = ({
   };
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products', packType, selectedContainerIndex, selectedItems],
+    queryKey: ['products', packType, selectedContainerIndex, selectedItems, searchTerm],
     queryFn: fetchAllProducts,
     select: (data) => {
       console.log('Raw products data:', data);
@@ -91,8 +109,6 @@ const ProductSelectionPanel = ({
       
       if (categories.length > 0) {
         filteredProducts = data.filter(product => {
-          console.log('Checking product:', product.name, 'type:', product.type_product, 'itemgroup:', product.itemgroup_product);
-          
           return categories.some(category => {
             if (category.type === 'itemgroup') {
               const matchesItemgroup = product.itemgroup_product === category.value;
