@@ -35,27 +35,23 @@ const ProductSelectionPanel = ({
   const isMobile = useIsMobile();
 
   const getAvailableCategories = () => {
-    console.log('Getting categories for pack:', packType, 'container:', selectedContainerIndex);
-    console.log('Current selected items:', selectedItems);
-
     if (packType === 'Pack Prestige') {
-      // Get counts of each item type
       const chemiseCount = selectedItems.filter(item => item.itemgroup_product === 'chemises').length;
       const beltCount = selectedItems.filter(item => item.itemgroup_product === 'ceintures').length;
       const cravateCount = selectedItems.filter(item => item.itemgroup_product === 'cravates').length;
 
       console.log('Current counts - Chemises:', chemiseCount, 'Belts:', beltCount, 'Cravates:', cravateCount);
 
-      // First slot (index 0): Only chemises if none selected
-      if (selectedContainerIndex === 0 && chemiseCount === 0) {
+      // First slot must be chemise
+      if (chemiseCount === 0) {
         return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
       }
-      // Second slot (index 1): Only belts if we have exactly one chemise and no belt
-      else if (selectedContainerIndex === 1 && chemiseCount === 1 && beltCount === 0) {
+      // Second slot must be belt after chemise is selected
+      if (chemiseCount === 1 && beltCount === 0) {
         return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
       }
-      // Third slot (index 2): Only cravates if we have one chemise, one belt, and no cravate
-      else if (selectedContainerIndex === 2 && chemiseCount === 1 && beltCount === 1 && cravateCount === 0) {
+      // Third slot must be cravate after chemise and belt are selected
+      if (chemiseCount === 1 && beltCount === 1 && cravateCount === 0) {
         return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
       }
       return [];
@@ -107,7 +103,6 @@ const ProductSelectionPanel = ({
     queryKey: ['products', packType, selectedContainerIndex, selectedItems, searchTerm],
     queryFn: fetchAllProducts,
     select: (data) => {
-      console.log('Raw products data:', data);
       let filteredProducts = data;
       const categories = getAvailableCategories();
       
@@ -119,19 +114,13 @@ const ProductSelectionPanel = ({
             if (category.type === 'itemgroup') {
               // For chemises, also check if it's in the homme category
               if (category.value === 'chemises') {
-                const matchesItemgroup = product.itemgroup_product === category.value && 
-                                       product.category_product === 'homme';
-                console.log('Checking chemise match:', product.name, matchesItemgroup);
-                return matchesItemgroup;
+                return product.itemgroup_product === category.value && 
+                       product.category_product === 'homme';
               }
-              const matchesItemgroup = product.itemgroup_product === category.value;
-              console.log('Checking itemgroup match:', product.name, matchesItemgroup);
-              return matchesItemgroup;
+              return product.itemgroup_product === category.value;
             }
             if (category.type === 'type') {
-              const matchesType = product.type_product === category.value;
-              console.log('Checking type match:', product.name, matchesType);
-              return matchesType;
+              return product.type_product === category.value;
             }
             return false;
           });
