@@ -7,9 +7,13 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import CategoriesDisplay from './components/CategoriesDisplay';
 import ProductGrid from './components/ProductGrid';
+import { useIsMobile } from '@/hooks/use-mobile';
+import AddItemDialog from './dialogs/AddItemDialog';
+import { playTickSound } from '@/utils/audio';
+import { toast } from '@/hooks/use-toast';
 
 interface ProductSelectionPanelProps {
-  onItemDrop: (item: Product) => void;
+  onItemDrop: (item: Product, size: string, personalization: string) => void;
   packType: string;
   selectedContainerIndex: number;
   selectedItems: Product[];
@@ -23,37 +27,53 @@ const ProductSelectionPanel = ({
 }: ProductSelectionPanelProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [personalization, setPersonalization] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const itemsPerPage = 4;
+  const isMobile = useIsMobile();
 
   // Get available categories based on pack type and container index
   const getAvailableCategories = () => {
     switch (packType) {
+      case 'Pack Prestige':
+        if (selectedContainerIndex === 0) {
+          return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
+        } else if (selectedContainerIndex === 1) {
+          return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
+        } else if (selectedContainerIndex === 2) {
+          return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
+        }
+        return [];
       case 'Pack Chemise':
         return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
-      case 'Pack Prestige':
-        return selectedContainerIndex === 0 
-          ? [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }]
-          : [{ label: 'Accessoires', type: 'type', value: 'Accessoires' }];
       case 'Pack Premium':
         return selectedContainerIndex === 0
-          ? [{ label: 'Cravates', type: 'itemgroup', value: 'Cravates' }]
-          : [{ label: 'Accessoires', type: 'type', value: 'Accessoires' }];
+          ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }]
+          : [{ label: 'Accessoires', type: 'type', value: 'accessoires' }];
       case 'Pack Trio':
         if (selectedContainerIndex === 0) {
-          return [{ label: 'Portefeuilles', type: 'itemgroup', value: 'Portefeuilles' }];
+          return [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }];
         } else if (selectedContainerIndex === 1) {
-          return [{ label: 'Ceintures', type: 'itemgroup', value: 'Ceintures' }];
+          return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
         } else {
-          return [{ label: 'Accessoires', type: 'type', value: 'Accessoires' }];
+          return [{ label: 'Accessoires', type: 'type', value: 'accessoires' }];
         }
       case 'Pack Duo':
         return selectedContainerIndex === 0
-          ? [{ label: 'Portefeuilles', type: 'itemgroup', value: 'Portefeuilles' }]
-          : [{ label: 'Ceintures', type: 'itemgroup', value: 'Ceintures' }];
+          ? [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }]
+          : [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
       case 'Pack Mini Duo':
         return selectedContainerIndex === 0
-          ? [{ label: 'Porte-cartes', type: 'itemgroup', value: 'Porte-cartes' }]
-          : [{ label: 'Porte-clés', type: 'itemgroup', value: 'Porte-clés' }];
+          ? [{ label: 'Porte-cartes', type: 'itemgroup', value: 'porte-cartes' }]
+          : [{ label: 'Porte-clés', type: 'itemgroup', value: 'porte-cles' }];
+      case 'Pack Ceinture':
+        return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
+      case 'Pack Cravatte':
+        return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
+      case 'Pack Malette':
+        return [{ label: 'Mallettes', type: 'itemgroup', value: 'mallettes' }];
       default:
         return [];
     }
@@ -63,43 +83,50 @@ const ProductSelectionPanel = ({
     queryKey: ['products', packType, selectedContainerIndex, selectedItems],
     queryFn: fetchAllProducts,
     select: (data) => {
+      console.log('Raw products data:', data); // Debug log
       let filteredProducts = data;
       const categories = getAvailableCategories();
       
       if (categories.length > 0) {
         filteredProducts = data.filter(product => {
-          // Special handling for Pack Chemise - only show chemises
-          if (packType === 'Pack Chemise') {
-            return product.itemgroup_product === 'chemises';
-          }
-
-          // Check if we should filter out chemises for Pack Prestige
-          if (packType === 'Pack Prestige' && selectedContainerIndex === 0) {
-            const hasChemise = selectedItems.some(item => item.itemgroup_product === 'chemises');
-            if (hasChemise && product.itemgroup_product === 'chemises') {
-              return false;
+          console.log('Checking product:', product); // Debug log
+          
+          // For Pack Prestige, enforce specific category requirements
+          if (packType === 'Pack Prestige') {
+            // First slot: only men's shirts
+            if (selectedContainerIndex === 0) {
+              return product.itemgroup_product === 'chemises' && 
+                     product.category_product === 'homme' &&
+                     !selectedItems.some(item => item.itemgroup_product === 'chemises');
+            }
+            // Second slot: only belts
+            if (selectedContainerIndex === 1) {
+              console.log('Checking belt product:', product.itemgroup_product); // Debug log
+              return product.itemgroup_product === 'ceintures' &&
+                     !selectedItems.some(item => item.itemgroup_product === 'ceintures');
+            }
+            // Third slot: only ties
+            if (selectedContainerIndex === 2) {
+              return product.itemgroup_product === 'cravates' &&
+                     !selectedItems.some(item => item.itemgroup_product === 'cravates');
             }
           }
 
-          // Check if we should filter out cravates for Pack Premium
-          if (packType === 'Pack Premium' && selectedContainerIndex === 0) {
-            const hasCravate = selectedItems.some(item => item.itemgroup_product === 'Cravates');
-            if (hasCravate && product.itemgroup_product === 'Cravates') {
-              return false;
-            }
-          }
-
+          // For other cases, check against the available categories
           return categories.some(category => {
             if (category.type === 'itemgroup') {
+              if (category.value === 'chemises') {
+                return product.itemgroup_product === category.value && 
+                       product.category_product === 'homme';
+              }
               return product.itemgroup_product === category.value;
-            } else if (category.type === 'type') {
-              return product.type_product === category.value;
             }
             return false;
           });
         });
       }
 
+      // Apply search filter after category filtering
       return filteredProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -112,6 +139,39 @@ const ProductSelectionPanel = ({
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, product: Product) => {
     console.log('Drag started for product:', product.name);
     event.dataTransfer.setData('product', JSON.stringify(product));
+  };
+
+  const handleProductSelect = (product: Product) => {
+    if (isMobile) {
+      setSelectedProduct(product);
+      setShowAddDialog(true);
+      playTickSound();
+    }
+  };
+
+  const handleConfirm = () => {
+    if (selectedProduct && selectedSize) {
+      const productWithSize = {
+        ...selectedProduct,
+        size: selectedSize,
+        personalization: personalization
+      };
+      onItemDrop(productWithSize, selectedSize, personalization);
+      setShowAddDialog(false);
+      setSelectedSize('');
+      setPersonalization('');
+      setSelectedProduct(null);
+      toast({
+        title: "Article ajouté au pack",
+        description: "L'article a été ajouté avec succès à votre pack cadeau",
+        style: {
+          backgroundColor: '#700100',
+          color: 'white',
+          border: '1px solid #590000',
+        },
+        duration: 3000,
+      });
+    }
   };
 
   return (
@@ -137,6 +197,7 @@ const ProductSelectionPanel = ({
         <ProductGrid 
           products={paginatedProducts}
           onDragStart={handleDragStart}
+          onProductSelect={handleProductSelect}
         />
 
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
@@ -163,6 +224,17 @@ const ProductSelectionPanel = ({
           </Button>
         </div>
       </div>
+
+      <AddItemDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        droppedItem={selectedProduct}
+        selectedSize={selectedSize}
+        personalization={personalization}
+        onSizeSelect={setSelectedSize}
+        onPersonalizationChange={setPersonalization}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 };
