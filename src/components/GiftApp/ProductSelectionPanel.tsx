@@ -34,96 +34,87 @@ const ProductSelectionPanel = ({
   const itemsPerPage = 4;
   const isMobile = useIsMobile();
 
-  // Get available categories based on pack type and container index
   const getAvailableCategories = () => {
-    switch (packType) {
-      case 'Pack Prestige':
-        if (selectedContainerIndex === 0) {
-          return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
-        } else if (selectedContainerIndex === 1) {
-          return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
-        } else if (selectedContainerIndex === 2) {
-          return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
-        }
-        return [];
-      case 'Pack Chemise':
-        return [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }];
-      case 'Pack Premium':
-        return selectedContainerIndex === 0
-          ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }]
-          : [{ label: 'Accessoires', type: 'type', value: 'accessoires' }];
-      case 'Pack Trio':
-        if (selectedContainerIndex === 0) {
-          return [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }];
-        } else if (selectedContainerIndex === 1) {
-          return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
-        } else {
-          return [{ label: 'Accessoires', type: 'type', value: 'accessoires' }];
-        }
-      case 'Pack Duo':
-        return selectedContainerIndex === 0
-          ? [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }]
-          : [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
-      case 'Pack Mini Duo':
-        return selectedContainerIndex === 0
-          ? [{ label: 'Porte-cartes', type: 'itemgroup', value: 'porte-cartes' }]
-          : [{ label: 'Porte-clés', type: 'itemgroup', value: 'porte-cles' }];
-      case 'Pack Ceinture':
-        return [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }];
-      case 'Pack Cravatte':
-        return [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }];
-      case 'Pack Malette':
-        return [{ label: 'Mallettes', type: 'itemgroup', value: 'mallettes' }];
-      default:
-        return [];
+    console.log('Getting categories for pack:', packType, 'container:', selectedContainerIndex);
+    
+    const categories = {
+      'Pack Prestige': [
+        [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }],
+        [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }],
+        [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }]
+      ],
+      'Pack Premium': [
+        [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }],
+        [{ label: 'Accessoires', type: 'type', value: 'accessoires' }]
+      ],
+      'Pack Trio': [
+        [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }],
+        [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }],
+        [{ label: 'Accessoires', type: 'type', value: 'accessoires' }]
+      ],
+      'Pack Duo': [
+        [{ label: 'Portefeuilles', type: 'itemgroup', value: 'cortefeuilles' }],
+        [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }]
+      ],
+      'Pack Mini Duo': [
+        [{ label: 'Porte-cartes', type: 'itemgroup', value: 'porte-cartes' }],
+        [{ label: 'Porte-clés', type: 'itemgroup', value: 'porte-cles' }]
+      ]
+    };
+
+    const singleCategories = {
+      'Pack Chemise': [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }],
+      'Pack Ceinture': [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }],
+      'Pack Cravatte': [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }],
+      'Pack Malette': [{ label: 'Mallettes', type: 'itemgroup', value: 'mallettes' }]
+    };
+
+    if (singleCategories[packType as keyof typeof singleCategories]) {
+      return singleCategories[packType as keyof typeof singleCategories];
     }
+
+    const packCategories = categories[packType as keyof typeof categories];
+    if (!packCategories) return [];
+
+    return packCategories[selectedContainerIndex] || [];
   };
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', packType, selectedContainerIndex, selectedItems],
     queryFn: fetchAllProducts,
     select: (data) => {
-      console.log('Raw products data:', data); // Debug log
+      console.log('Raw products data:', data);
       let filteredProducts = data;
       const categories = getAvailableCategories();
       
+      console.log('Filtering with categories:', categories);
+      
       if (categories.length > 0) {
         filteredProducts = data.filter(product => {
-          console.log('Checking product:', product); // Debug log
+          console.log('Checking product:', product.name, 'type:', product.type_product, 'itemgroup:', product.itemgroup_product);
           
-          // For Pack Prestige, enforce specific category requirements
-          if (packType === 'Pack Prestige') {
-            // First slot: only men's shirts
-            if (selectedContainerIndex === 0) {
-              return product.itemgroup_product === 'chemises' && 
-                     product.category_product === 'homme' &&
-                     !selectedItems.some(item => item.itemgroup_product === 'chemises');
-            }
-            // Second slot: only belts
-            if (selectedContainerIndex === 1) {
-              console.log('Checking belt product:', product.itemgroup_product); // Debug log
-              return product.itemgroup_product === 'ceintures' &&
-                     !selectedItems.some(item => item.itemgroup_product === 'ceintures');
-            }
-            // Third slot: only ties
-            if (selectedContainerIndex === 2) {
-              return product.itemgroup_product === 'cravates' &&
-                     !selectedItems.some(item => item.itemgroup_product === 'cravates');
-            }
-          }
-
-          // For other cases, check against the available categories
           return categories.some(category => {
             if (category.type === 'itemgroup') {
-              if (category.value === 'chemises') {
-                return product.itemgroup_product === category.value && 
-                       product.category_product === 'homme';
-              }
-              return product.itemgroup_product === category.value;
+              const matchesItemgroup = product.itemgroup_product === category.value;
+              console.log('Checking itemgroup match:', product.name, matchesItemgroup);
+              return matchesItemgroup;
+            }
+            if (category.type === 'type') {
+              const matchesType = product.type_product === category.value;
+              console.log('Checking type match:', product.name, matchesType);
+              return matchesType;
             }
             return false;
           });
         });
+
+        // Filter out items that are already in the pack
+        filteredProducts = filteredProducts.filter(product => 
+          !selectedItems.some(item => 
+            item.id === product.id && 
+            item.itemgroup_product === product.itemgroup_product
+          )
+        );
       }
 
       // Apply search filter after category filtering
@@ -132,9 +123,6 @@ const ProductSelectionPanel = ({
       );
     }
   });
-
-  const totalPages = Math.ceil((products?.length || 0) / itemsPerPage);
-  const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, product: Product) => {
     console.log('Drag started for product:', product.name);
@@ -195,7 +183,7 @@ const ProductSelectionPanel = ({
         />
         
         <ProductGrid 
-          products={paginatedProducts}
+          products={products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
           onDragStart={handleDragStart}
           onProductSelect={handleProductSelect}
         />
@@ -211,13 +199,13 @@ const ProductSelectionPanel = ({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm text-gray-600">
-            Page {currentPage} sur {totalPages}
+            Page {currentPage} sur {Math.ceil(products.length / itemsPerPage)}
           </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(p => Math.min(Math.ceil(products.length / itemsPerPage), p + 1))}
+            disabled={currentPage >= Math.ceil(products.length / itemsPerPage)}
             className="bg-[#700100] hover:bg-[#590000] text-white border-none"
           >
             <ChevronRight className="h-4 w-4" />
