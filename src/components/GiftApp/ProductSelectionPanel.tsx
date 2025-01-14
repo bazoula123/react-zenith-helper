@@ -38,19 +38,21 @@ const ProductSelectionPanel = ({
     console.log('Getting categories for pack:', packType, 'container:', selectedContainerIndex);
     
     if (packType === 'Pack Prestige') {
-      // Check if we're following the correct order
-      const hasChemise = selectedItems.some(item => item.itemgroup_product === 'chemises');
-      const hasBelt = selectedItems.some(item => item.itemgroup_product === 'ceintures');
+      // Count how many items of each type we have
+      const chemiseCount = selectedItems.filter(item => item.itemgroup_product === 'chemises').length;
+      const beltCount = selectedItems.filter(item => item.itemgroup_product === 'ceintures').length;
       
+      // First slot must be chemise
       if (selectedContainerIndex === 0) {
-        // First slot: only allow chemises if none selected
-        return !hasChemise ? [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }] : [];
-      } else if (selectedContainerIndex === 1) {
-        // Second slot: only allow belts if chemise is selected and no belt yet
-        return hasChemise && !hasBelt ? [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }] : [];
-      } else if (selectedContainerIndex === 2) {
-        // Third slot: only allow cravates if both chemise and belt are selected
-        return hasChemise && hasBelt ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }] : [];
+        return chemiseCount === 0 ? [{ label: 'Chemises', type: 'itemgroup', value: 'chemises' }] : [];
+      }
+      // Second slot must be belt, but only if we have exactly one chemise
+      else if (selectedContainerIndex === 1) {
+        return chemiseCount === 1 && beltCount === 0 ? [{ label: 'Ceintures', type: 'itemgroup', value: 'ceintures' }] : [];
+      }
+      // Third slot must be cravate, but only if we have exactly one chemise and one belt
+      else if (selectedContainerIndex === 2) {
+        return chemiseCount === 1 && beltCount === 1 ? [{ label: 'Cravates', type: 'itemgroup', value: 'cravates' }] : [];
       }
       return [];
     }
@@ -111,6 +113,13 @@ const ProductSelectionPanel = ({
         filteredProducts = data.filter(product => {
           return categories.some(category => {
             if (category.type === 'itemgroup') {
+              // For chemises, also check if it's in the homme category
+              if (category.value === 'chemises') {
+                const matchesItemgroup = product.itemgroup_product === category.value && 
+                                       product.category_product === 'homme';
+                console.log('Checking chemise match:', product.name, matchesItemgroup);
+                return matchesItemgroup;
+              }
               const matchesItemgroup = product.itemgroup_product === category.value;
               console.log('Checking itemgroup match:', product.name, matchesItemgroup);
               return matchesItemgroup;
