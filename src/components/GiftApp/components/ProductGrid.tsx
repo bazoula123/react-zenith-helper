@@ -6,9 +6,10 @@ import { formatPrice } from '@/utils/priceCalculations';
 interface ProductGridProps {
   products: Product[];
   onDragStart: (e: React.DragEvent<HTMLDivElement>, product: Product) => void;
+  onProductSelect: (product: Product) => void;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, onDragStart }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ products, onDragStart, onProductSelect }) => {
   return (
     <div className="grid grid-cols-2 gap-2 p-2">
       {products.map((product) => (
@@ -17,6 +18,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onDragStart }) => {
           className="relative bg-black/90 backdrop-blur-sm rounded-lg p-2 cursor-grab active:cursor-grabbing border border-gray-800/30 transition-all duration-300 hover:border-gray-700/50"
           draggable
           onDragStart={(e) => onDragStart(e, product)}
+          onClick={() => onProductSelect(product)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
