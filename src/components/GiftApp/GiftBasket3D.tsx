@@ -8,6 +8,7 @@ import ProductDetailsDialog from './dialogs/ProductDetailsDialog';
 import AddItemParticles from '../effects/AddItemParticles';
 import BoxRevealAnimation from './animations/BoxRevealAnimation';
 import { packSpaceLabels } from '@/config/packSpaceLabels';
+import { packSpaceDimensions } from '@/config/packSpaceDimensions';
 
 interface GiftBasket3DProps {
   items: Product[];
@@ -16,67 +17,6 @@ interface GiftBasket3DProps {
   containerCount: number;
   onContainerSelect: (index: number) => void;
 }
-
-const getPackSizing = (packType: string) => {
-  const sizingMap: { [key: string]: { 
-    main: string, 
-    secondary: string, 
-    tertiary: string,
-    mainHeight: string,
-    secondaryHeight: string,
-    tertiaryHeight: string
-  } } = {
-    'Pack Prestige': {
-      main: 'w-[60%]',
-      secondary: 'w-[40%]',
-      tertiary: 'w-[40%]',
-      mainHeight: 'h-[583px]',
-      secondaryHeight: 'h-[291px]',
-      tertiaryHeight: 'h-[291px]'
-    },
-    'Pack Premium': {
-      main: 'w-[40%]',
-      secondary: 'w-[60%]',
-      tertiary: 'w-[60%]',
-      mainHeight: 'h-[583px]',
-      secondaryHeight: 'h-[291px]',
-      tertiaryHeight: 'h-[291px]'
-    },
-    'Pack Trio': {
-      main: 'w-[50%]',
-      secondary: 'w-[50%]',
-      tertiary: 'w-[50%]',
-      mainHeight: 'h-[583px]',
-      secondaryHeight: 'h-[291px]',
-      tertiaryHeight: 'h-[291px]'
-    },
-    'Pack Duo': {
-      main: 'w-[55%]',
-      secondary: 'w-[45%]',
-      tertiary: '',
-      mainHeight: 'h-[400px]',
-      secondaryHeight: 'h-[400px]',
-      tertiaryHeight: ''
-    },
-    'Pack Mini Duo': {
-      main: 'w-[50%]',
-      secondary: 'w-[50%]',
-      tertiary: '',
-      mainHeight: 'h-[350px]',
-      secondaryHeight: 'h-[350px]',
-      tertiaryHeight: ''
-    }
-  };
-
-  return sizingMap[packType] || { 
-    main: 'w-[50%]', 
-    secondary: 'w-[50%]', 
-    tertiary: 'w-[50%]',
-    mainHeight: 'h-[583px]',
-    secondaryHeight: 'h-[291px]',
-    tertiaryHeight: 'h-[291px]'
-  };
-};
 
 const GiftBasket3D = ({ 
   items, 
@@ -96,7 +36,7 @@ const GiftBasket3D = ({
 
   const packType = sessionStorage.getItem('selectedPackType') || 'Pack Prestige';
   const spaceLabels = packSpaceLabels[packType];
-  const packSizing = getPackSizing(packType);
+  const spaceDimensions = packSpaceDimensions[packType];
 
   const handleDrop = (containerId: number) => (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -156,7 +96,7 @@ const GiftBasket3D = ({
         
         {containerCount === 3 ? (
           <div className="flex gap-3">
-            <div className={`${packSizing.main} ${packSizing.mainHeight}`}>
+            <div className={`${spaceDimensions.main.width} ${spaceDimensions.main.height}`}>
               <GiftPackContainer
                 title={spaceLabels?.mainSpace || "ESPACE PRINCIPAL"}
                 item={items[0]}
@@ -172,8 +112,8 @@ const GiftBasket3D = ({
               )}
             </div>
             
-            <div className={`${packSizing.secondary} flex flex-col gap-3`}>
-              <div className={packSizing.secondaryHeight}>
+            <div className={`${spaceDimensions.secondary?.width || 'w-[40%]'} flex flex-col gap-3`}>
+              <div className={spaceDimensions.secondary?.height || 'h-[291px]'}>
                 <GiftPackContainer
                   title={spaceLabels?.secondarySpace || "ESPACE SECONDAIRE"}
                   item={items[1]}
@@ -188,7 +128,7 @@ const GiftBasket3D = ({
                   <AddItemParticles position={particlePosition} />
                 )}
               </div>
-              <div className={packSizing.tertiaryHeight}>
+              <div className={spaceDimensions.tertiary?.height || 'h-[291px]'}>
                 <GiftPackContainer
                   title={spaceLabels?.tertiarySpace || "ESPACE TERTIAIRE"}
                   item={items[2]}
@@ -208,7 +148,7 @@ const GiftBasket3D = ({
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {Array.from({ length: containerCount }).map((_, index) => (
-              <div key={index} className={`relative ${packSizing.mainHeight}`}>
+              <div key={index} className={`relative ${spaceDimensions.main.height}`}>
                 <GiftPackContainer
                   title={spaceLabels?.mainSpace || "ESPACE PRINCIPAL"}
                   item={items[index]}

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { savePersonalization } from '@/utils/personalizationStorage';
+import { toast } from "@/hooks/use-toast";
 
 interface CartItemCardProps {
   item: CartItem;
@@ -19,13 +20,42 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
   const packType = sessionStorage.getItem('selectedPackType') || 'aucun';
   const hasDiscount = item.discount_product && item.discount_product !== "" && !isNaN(parseFloat(item.discount_product));
   const isFromPack = item.fromPack && packType !== 'aucun';
+  const hasPersonalization = item.personalization && item.personalization !== '-';
+  const isChemise = item.itemgroup_product === 'chemises';
+  const showPersonalizationCost = hasPersonalization && isChemise && !isFromPack;
+
+  const maxLength = isChemise ? 4 : 100;
+  const remainingChars = maxLength - personalizationText.length;
 
   const handleSavePersonalization = () => {
+    if (isChemise && personalizationText.length > 4) {
+      toast({
+        title: "Erreur de personnalisation",
+        description: "Pour les chemises, la personnalisation est limitée à 4 caractères maximum",
+        variant: "destructive",
+      });
+      return;
+    }
     savePersonalization(item.id, personalizationText);
     item.personalization = personalizationText;
     setIsPersonalizationOpen(false);
   };
-  
+
+  const handlePersonalizationChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    if (newText.length <= maxLength) {
+      setPersonalizationText(newText);
+    } else {
+      toast({
+        title: "Limite de caractères atteinte",
+        description: isChemise 
+          ? "La personnalisation est limitée à 4 caractères pour les chemises"
+          : "La personnalisation est limitée à 100 caractères",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -62,7 +92,13 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
               {item.withBox && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#700100]/10 text-[#700100] whitespace-nowrap">
                   <Gift size={12} />
-                  + Box cadeau
+                  + Box cadeau (30 TND)
+                </span>
+              )}
+              {showPersonalizationCost && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#700100]/10 text-[#700100] whitespace-nowrap">
+                  <PenLine size={12} />
+                  + Personnalisation (30 TND)
                 </span>
               )}
             </div>
@@ -149,15 +185,26 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
           </DialogHeader>
           <div className="space-y-6 p-6 bg-white">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Votre message personnalisé
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-medium text-gray-700">Votre texte de personnalisation</label>
+                <span className={`text-sm ${remainingChars === 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {remainingChars} caractères restants
+                </span>
+              </div>
               <Textarea
-                placeholder="Ajoutez votre texte personnalisé ici..."
+                placeholder={isChemise 
+                  ? "Maximum 4 caractères (ex: IHEB)"
+                  : "Ajoutez votre texte personnalisé ici..."}
                 value={personalizationText}
-                onChange={(e) => setPersonalizationText(e.target.value)}
+                onChange={handlePersonalizationChange}
+                maxLength={maxLength}
                 className="min-h-[120px] p-4 text-gray-800 bg-gray-50 border-2 border-gray-200 focus:border-[#700100] focus:ring-[#700100] rounded-lg resize-none transition-all duration-300"
               />
+              <p className="text-sm text-gray-500 italic">
+                {isChemise 
+                  ? "Pour les chemises, la personnalisation est limitée à 4 caractères"
+                  : "Maximum 100 caractères"}
+              </p>
             </div>
             
             <div className="flex gap-4 pt-4">

@@ -21,10 +21,6 @@ interface ProductDetailContainerProps {
 }
 
 const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContainerProps) => {
-  const [selectedSize, setSelectedSize] = useState(() => {
-    // Automatically set size to 'unique' for cravatte items
-    return product.itemgroup_product === 'cravates' ? 'unique' : '';
-  });
   const [quantity, setQuantity] = useState(1);
   const [personalizationText, setPersonalizationText] = useState(() => {
     const savedPersonalizations = getPersonalizations();
@@ -34,10 +30,27 @@ const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContai
   const [isBoxDialogOpen, setIsBoxDialogOpen] = useState(false);
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const [selectedSize, setSelectedSize] = useState(() => {
+    // Automatically set size to 'unique' for items that don't need size selection
+    return ['cravates', 'portefeuilles'].includes(product.itemgroup_product) ? 'unique' : '';
+  });
+
+  // Get available sizes (filtering out empty strings and zeros)
+  const getAvailableSizes = () => {
+    const sizeEntries = Object.entries(product.sizes);
+    return sizeEntries
+      .filter(([_, quantity]) => quantity > 0 && quantity !== '')
+      .map(([size]) => size.toUpperCase());
+  };
 
   const canPersonalize = canItemBePersonalized(product.itemgroup_product);
   const personalizationMessage = getPersonalizationMessage(product.itemgroup_product);
-  const isCravatte = product.itemgroup_product === 'cravates';
+  const needsSizeSelection = !['cravates', 'portefeuilles'].includes(product.itemgroup_product);
+
+  console.log('Product itemgroup:', product.itemgroup_product);
+  console.log('Can personalize:', canPersonalize);
+  console.log('Personalization message:', personalizationMessage);
+  console.log('Available sizes:', getAvailableSizes());
 
   const productImages = [
     product.image,
@@ -47,7 +60,7 @@ const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContai
   ].filter(Boolean);
 
   const handleAddToCart = (withBox?: boolean) => {
-    if (!selectedSize && !isCravatte) {
+    if (!selectedSize && needsSizeSelection) {
       toast({
         title: "Erreur",
         description: "Veuillez sélectionner une taille",
@@ -56,11 +69,13 @@ const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContai
       return;
     }
 
-    const availableStock = isCravatte ? product.quantity : getStockForSize(product, selectedSize);
+    const availableStock = needsSizeSelection ? getStockForSize(product, selectedSize) : product.quantity;
     if (quantity > availableStock) {
       toast({
         title: "Stock insuffisant",
-        description: `Il ne reste que ${availableStock} articles en stock`,
+        description: needsSizeSelection 
+          ? `Il ne reste que ${availableStock} articles en stock pour la taille ${selectedSize}`
+          : `Il ne reste que ${availableStock} articles en stock`,
         variant: "destructive",
       });
       return;
@@ -120,6 +135,7 @@ const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContai
               productId={product.id}
               onSave={setPersonalizationText}
               initialText={personalizationText}
+              itemgroup_product={product.itemgroup_product}
             />
           </div>
         )}
@@ -133,12 +149,10 @@ const ProductDetailContainer = ({ product, onProductAdded }: ProductDetailContai
         <div className="h-px bg-gray-200" />
 
         <div className="space-y-6">
-          {!isCravatte && (
+          {needsSizeSelection && (
             <SizeSelector
               selectedSize={selectedSize}
-              sizes={Object.entries(product.sizes)
-                .filter(([_, stock]) => stock > 0)
-                .map(([size]) => size)}
+              sizes={getAvailableSizes()}
               onSizeSelect={setSelectedSize}
               isCostume={product.itemgroup_product === 'costumes'}
               itemGroup={product.itemgroup_product}
