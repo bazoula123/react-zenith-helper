@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MinusCircle, PlusCircle, Trash2, Tag, Package, Gift, PenLine } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CartItem } from './CartProvider';
@@ -15,12 +15,13 @@ interface CartItemCardProps {
 }
 
 const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) => {
-  const [isPersonalizationOpen, setIsPersonalizationOpen] = React.useState(false);
-  const [personalizationText, setPersonalizationText] = React.useState(item.personalization || '');
+  const [isPersonalizationOpen, setIsPersonalizationOpen] = useState(false);
+  const [personalizationText, setPersonalizationText] = useState(item.personalization || '');
   const packType = sessionStorage.getItem('selectedPackType') || 'aucun';
   const hasDiscount = item.discount_product && item.discount_product !== "" && !isNaN(parseFloat(item.discount_product));
   const isFromPack = item.fromPack && packType !== 'aucun';
-  const hasPersonalization = item.personalization && item.personalization !== '-';
+  const isPackagingFee = item.type_product === "Pack";
+  const hasPersonalization = !isPackagingFee && item.personalization && item.personalization !== '-';
   const isChemise = item.itemgroup_product === 'chemises';
   const showPersonalizationCost = hasPersonalization && isChemise && !isFromPack;
 
@@ -104,14 +105,14 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
             </div>
           </div>
           
-          {(item.size || item.color) && (
+          {(item.size !== '-' || item.color !== '-') && !isPackagingFee && (
             <div className="flex flex-wrap gap-2 mb-2">
-              {item.size && (
+              {item.size !== '-' && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
                   Taille: {item.size}
                 </span>
               )}
-              {item.color && (
+              {item.color !== '-' && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
                   Couleur: {item.color}
                 </span>
@@ -119,7 +120,7 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
             </div>
           )}
 
-          {item.personalization && (
+          {!isPackagingFee && item.personalization && item.personalization !== '-' && (
             <div className="mb-2 bg-gray-50 p-3 rounded-lg relative group cursor-pointer" onClick={() => setIsPersonalizationOpen(true)}>
               <p className="text-sm text-gray-600 pr-8">
                 Personnalisation: {item.personalization}
@@ -176,55 +177,57 @@ const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) =
         </div>
       </div>
 
-      <Dialog open={isPersonalizationOpen} onOpenChange={setIsPersonalizationOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white shadow-xl border border-gray-100">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-serif text-[#700100] mb-4 text-center">
-              Modifier la personnalisation
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 p-6 bg-white">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Votre texte de personnalisation</label>
-                <span className={`text-sm ${remainingChars === 0 ? 'text-red-500' : 'text-gray-500'}`}>
-                  {remainingChars} caractères restants
-                </span>
+      {!isPackagingFee && (
+        <Dialog open={isPersonalizationOpen} onOpenChange={setIsPersonalizationOpen}>
+          <DialogContent className="sm:max-w-[500px] bg-white shadow-xl border border-gray-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-serif text-[#700100] mb-4 text-center">
+                Modifier la personnalisation
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 p-6 bg-white">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-gray-700">Votre texte de personnalisation</label>
+                  <span className={`text-sm ${remainingChars === 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {remainingChars} caractères restants
+                  </span>
+                </div>
+                <Textarea
+                  placeholder={isChemise 
+                    ? "Maximum 4 caractères (ex: IHEB)"
+                    : "Ajoutez votre texte personnalisé ici..."}
+                  value={personalizationText}
+                  onChange={handlePersonalizationChange}
+                  maxLength={maxLength}
+                  className="min-h-[120px] p-4 text-gray-800 bg-gray-50 border-2 border-gray-200 focus:border-[#700100] focus:ring-[#700100] rounded-lg resize-none transition-all duration-300"
+                />
+                <p className="text-sm text-gray-500 italic">
+                  {isChemise 
+                    ? "Pour les chemises, la personnalisation est limitée à 4 caractères"
+                    : "Maximum 100 caractères"}
+                </p>
               </div>
-              <Textarea
-                placeholder={isChemise 
-                  ? "Maximum 4 caractères (ex: IHEB)"
-                  : "Ajoutez votre texte personnalisé ici..."}
-                value={personalizationText}
-                onChange={handlePersonalizationChange}
-                maxLength={maxLength}
-                className="min-h-[120px] p-4 text-gray-800 bg-gray-50 border-2 border-gray-200 focus:border-[#700100] focus:ring-[#700100] rounded-lg resize-none transition-all duration-300"
-              />
-              <p className="text-sm text-gray-500 italic">
-                {isChemise 
-                  ? "Pour les chemises, la personnalisation est limitée à 4 caractères"
-                  : "Maximum 100 caractères"}
-              </p>
+              
+              <div className="flex gap-4 pt-4">
+                <Button
+                  onClick={() => setIsPersonalizationOpen(false)}
+                  variant="outline"
+                  className="flex-1 border-2 border-gray-300 bg-[#fff] hover:bg-[#590000] text-gray-700 transition-all duration-300"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleSavePersonalization}
+                  className="flex-1 bg-[#700100] hover:bg-[#590000] text-white transition-all duration-300"
+                >
+                  Enregistrer
+                </Button>
+              </div>
             </div>
-            
-            <div className="flex gap-4 pt-4">
-              <Button
-                onClick={() => setIsPersonalizationOpen(false)}
-                variant="outline"
-                className="flex-1 border-2 border-gray-300 bg-[#fff] hover:bg-[#590000] text-gray-700 transition-all duration-300"
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleSavePersonalization}
-                className="flex-1 bg-[#700100] hover:bg-[#590000] text-white transition-all duration-300"
-              >
-                Enregistrer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </motion.div>
   );
 };
