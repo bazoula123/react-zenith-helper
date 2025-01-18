@@ -6,14 +6,16 @@ import { fetchPaginatedProducts } from "../services/paginatedProductsApi";
 import ProductCard from "./ProductCard";
 import Categories from "./Categories";
 import { useInView } from "react-intersection-observer";
+import { toast } from "@/hooks/use-toast";
 
-const PRODUCTS_PER_PAGE = 10;
+const PRODUCTS_PER_PAGE = 8; // Reduced from 10 to improve initial load time
 
 const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { ref: loadMoreRef, inView } = useInView({
     threshold: 0.1,
-    triggerOnce: false
+    triggerOnce: false,
+    rootMargin: '100px'
   });
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -39,7 +41,8 @@ const Products = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    error
+    error,
+    isError
   } = useInfiniteQuery({
     queryKey: ['products', selectedCategory],
     queryFn: ({ pageParam = 1 }) => fetchPaginatedProducts(pageParam, PRODUCTS_PER_PAGE),
@@ -48,6 +51,8 @@ const Products = () => {
     initialPageParam: 1,
     staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
     gcTime: 10 * 60 * 1000, // Keep unused data in cache for 10 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -55,6 +60,16 @@ const Products = () => {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (isError && error) {
+      toast({
+        title: "Erreur de chargement",
+        description: "Impossible de charger les produits. Veuillez réessayer plus tard.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error]);
 
   // Filter products based on selected category
   const filteredProducts = React.useMemo(() => {
@@ -112,11 +127,6 @@ const Products = () => {
     };
   }, []);
 
-  if (error) {
-    console.error("Error loading products:", error);
-    return <div className="text-center text-red-500">Failed to load products</div>;
-  }
-
   return (
     <div className="products-wrapper">
       <div className="products-container">
@@ -125,7 +135,7 @@ const Products = () => {
         <div className="embla relative" ref={emblaRef}>
           <div className="embla__container">
             {isLoading ? (
-              Array.from({ length: 6 }).map((_, index) => (
+              Array.from({ length: 4 }).map((_, index) => (
                 <div className="embla__slide" key={index}>
                   <div className="skeleton-card"></div>
                 </div>
