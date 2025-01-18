@@ -18,12 +18,31 @@ export function VideoPreview({ videoUrl, onClick }: VideoPreviewProps) {
       video.loop = true;
       video.autoplay = true;
       video.playbackRate = 1.5;
+      video.preload = "metadata"; // Only load metadata initially
       
       const loadVideo = async () => {
         try {
-          await preloadVideo(videoUrl);
-          setIsLoaded(true);
-          await video.play();
+          // Use Intersection Observer to load video only when in viewport
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  preloadVideo(videoUrl).then(() => {
+                    setIsLoaded(true);
+                    video.play();
+                  });
+                  observer.unobserve(video);
+                }
+              });
+            },
+            { threshold: 0.1 }
+          );
+
+          observer.observe(video);
+
+          return () => {
+            observer.disconnect();
+          };
         } catch (error) {
           console.error("Video loading/autoplay failed:", error);
         }
@@ -39,7 +58,9 @@ export function VideoPreview({ videoUrl, onClick }: VideoPreviewProps) {
       onClick={onClick}
     >
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+        <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
       )}
       <video 
         ref={videoRef}
@@ -48,7 +69,7 @@ export function VideoPreview({ videoUrl, onClick }: VideoPreviewProps) {
         playsInline
         loop
         autoPlay
-        preload="auto"
+        preload="metadata"
         style={{ willChange: 'transform' }}
       >
         <source src={videoUrl} type="video/mp4" />

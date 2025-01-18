@@ -1,20 +1,37 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
 
 const NewCollection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.preload = "auto";
+      videoRef.current.preload = "metadata"; // Only load metadata initially
       videoRef.current.playbackRate = 1.2;
       
       const playVideo = async () => {
         try {
+          // Load video only when component is mounted
+          if ('loading' in HTMLImageElement.prototype) {
+            videoRef.current?.setAttribute('loading', 'lazy');
+          }
+          
+          // Add loading indicator
+          const handleCanPlay = () => {
+            setIsLoading(false);
+          };
+          
+          videoRef.current?.addEventListener('canplay', handleCanPlay);
           await videoRef.current?.play();
+          
+          return () => {
+            videoRef.current?.removeEventListener('canplay', handleCanPlay);
+          };
         } catch (error) {
           console.error("Video autoplay failed:", error);
+          setIsLoading(false);
         }
       };
       
@@ -27,14 +44,19 @@ const NewCollection = () => {
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-[3px] lg:divide-white">
           {/* Video section - shown at top on mobile, right side on desktop */}
-          <div className="block lg:hidden mb-6">
+          <div className="block lg:hidden mb-6 relative">
+            {isLoading && (
+              <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
             <video
               ref={videoRef}
               autoPlay
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               className="w-full h-[345px] object-cover"
             >
               <source
@@ -94,14 +116,19 @@ const NewCollection = () => {
             </div>
           </div>
 
-          <div className="hidden lg:block" style={{ height: '900px' }}>
+          <div className="hidden lg:block relative" style={{ height: '900px' }}>
+            {isLoading && (
+              <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
             <video
               ref={videoRef}
               autoPlay
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               className="w-full h-full object-cover"
             >
               <source
