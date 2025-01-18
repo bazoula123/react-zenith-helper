@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { preloadImages } from '../utils/preloadManager';
+import { useTranslation } from 'react-i18next';
 
 const Hero = () => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -10,17 +12,17 @@ const Hero = () => {
     {
       image: 'banner.png',
       mobileImage: 'banner2Mobile.png',
-      title: 'Univers cadeau',
+      title: t('hero.titles.giftUniverse'),
     },
     {
       image: 'banner2.png',
       mobileImage: 'bannerMobile.png',
-      title: 'Nouvelle collection',
+      title: t('hero.titles.newCollection'),
     },
     {
       image: 'banner3.png',
       mobileImage: 'banner3Mobile.png',
-      title: 'Le sur mesure',
+      title: t('hero.titles.customTailoring'),
     },
   ];
 
