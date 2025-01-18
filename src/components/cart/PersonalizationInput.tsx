@@ -25,7 +25,7 @@ const PersonalizationInput = ({ itemId, onUpdate, itemGroup }: PersonalizationIn
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
-  console.log('Current itemGroup:', itemGroup); // Debug log
+  console.log('AAAAAAAAAAAAA:', itemGroup); // Debug log
 
   const maxLength = itemGroup.toLowerCase() === 'chemises' ? 4 : 100;
   const remainingChars = maxLength - text.length;

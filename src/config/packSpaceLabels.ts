@@ -11,7 +11,7 @@ export const packSpaceLabels: PackSpaceConfig = {
   'Pack Prestige': {
     mainSpace: 'CHEMISE',
     secondarySpace: 'ACCESSOIRE',
-    tertiarySpace: 'ACCESSOIRE'
+    tertiarySpace: 'ACCESSOIRE' ,
   },
   'Pack Premium': {
     mainSpace: 'CRAVATTE',

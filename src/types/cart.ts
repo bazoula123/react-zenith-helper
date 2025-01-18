@@ -2,15 +2,18 @@ export interface CartItem {
   id: number;
   name: string;
   price: number;
+  originalPrice?: number;
   quantity: number;
   image: string;
-  type_product: string;
-  itemgroup_product: string;
-  size: string;
-  color: string;
-  personalization: string;
-  pack: string;
+  size?: string;
+  color?: string;
+  personalization?: string;
   fromPack?: boolean;
+  pack?: string;
+  withBox?: boolean;
+  discount_product?: string;
+  type_product?: string;
+  itemgroup_product?: string;
 }
 
 export interface CartContextType {
@@ -22,10 +25,5 @@ export interface CartContextType {
   hasNewsletterDiscount: boolean;
   applyNewsletterDiscount: () => void;
   removeNewsletterDiscount: () => void;
-  calculateTotal: () => {
-    subtotal: number;
-    shipping: number;
-    total: number;
-    discount: number;
-  };
+  calculateTotal: () => { subtotal: number; discount: number; total: number; boxTotal: number };
 }
