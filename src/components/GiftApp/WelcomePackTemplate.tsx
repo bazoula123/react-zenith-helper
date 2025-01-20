@@ -12,6 +12,7 @@ interface WelcomePackTemplateProps {
 const WelcomePackTemplate = ({ packType, onCompose }: WelcomePackTemplateProps) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const content = getPackContent(packType);
+  const isSingleImagePack = packType === 'Pack Duo' || packType === 'Pack Mini Duo';
 
   return (
     <>
@@ -34,23 +35,35 @@ const WelcomePackTemplate = ({ packType, onCompose }: WelcomePackTemplateProps) 
                 </button>
               </div>
             </div>
-            <div className="flex flex-col lg:grid lg:grid-cols-2 h-full">
-              <div className="order-2 lg:order-1 space-y-1 lg:mr-[-40%] mt-6 lg:mt-0">
-                {content.images.map((image, index) => (
-                  <img 
-                    key={index}
-                    src={image}
-                    alt={`${content.title} showcase ${index + 1}`}
-                    className="w-[35%] h-[160px] object-cover mx-auto"
-                  />
-                ))}
-              </div>
-              <div className="order-1 lg:order-2 h-[480px] sm:h-full">
-                <VideoPreview
-                  videoUrl={content.videoUrl}
-                  onClick={() => setIsVideoOpen(true)}
+            <div className={`flex flex-col ${isSingleImagePack ? 'items-center justify-center' : 'lg:grid lg:grid-cols-2'} h-full`}>
+              {isSingleImagePack ? (
+                <div className="w-[85%] h-full flex items-center justify-center">
+                <img 
+                  src={content.images[0]}
+                  alt={`${content.title} showcase`}
+                  className="w-full h-auto max-h-[510px] object-contain shadow-md rounded-md border border-gray-200"
                 />
               </div>
+              ) : (
+                <>
+                  <div className="order-2 lg:order-1 space-y-1 lg:mr-[-40%] mt-6 lg:mt-0">
+                    {content.images.map((image, index) => (
+                      <img 
+                        key={index}
+                        src={image}
+                        alt={`${content.title} showcase ${index + 1}`}
+                        className="w-[35%] h-[160px] object-cover mx-auto"
+                      />
+                    ))}
+                  </div>
+                  <div className="order-1 lg:order-2 h-[480px] sm:h-full">
+                    <VideoPreview
+                      videoUrl={content.videoUrl}
+                      onClick={() => setIsVideoOpen(true)}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
