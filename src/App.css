@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Hide Google Translate elements */
+.goog-te-banner-frame,
+.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+/* Custom styles for translation dropdown */
+.goog-te-menu-frame {
+  box-shadow: none !important;
+  border: 1px solid #e2e8f0 !important;
+}
