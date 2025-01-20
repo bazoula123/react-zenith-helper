@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, X, MapPin, Phone } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import CartIcon from "./navigation/CartIcon";
 import MobileMenu from "./navigation/MobileMenu";
 import MobileMenuOverlay from "./navigation/MobileMenuOverlay";
@@ -7,12 +7,14 @@ import { menuItems } from "@/constants/menuItems";
 import StoreLocationsModal from "./StoreLocationsModal";
 import ContactModal from "./ContactModal";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const TopNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const { t } = useTranslation();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -42,13 +44,13 @@ const TopNavbar = () => {
 
             <div className="flex-1 text-center sm:hidden">
               <span className="text-sm text-white whitespace-nowrap">
-                Livraison gratuite à partir de 299 TND
+                {t('topNav.freeShipping')}
               </span>
             </div>
 
             <div className="hidden sm:flex items-center gap-4">
               <span className="flex items-center gap-2 text-sm text-white whitespace-nowrap">
-                Livraison gratuite à partir de 299 TND
+                {t('topNav.freeShipping')}
               </span>
             </div>
 
@@ -63,7 +65,7 @@ const TopNavbar = () => {
               className="flex items-center gap-2 text-sm text-white whitespace-nowrap hover:text-accent transition-colors duration-300"
             >
               <Phone size={16} />
-              CONTACTEZ-NOUS
+              {t('topNav.contactUs')}
             </button>
             <CartIcon />
           </div>
