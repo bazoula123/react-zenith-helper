@@ -65,7 +65,6 @@ const TopNavbar = () => {
               <Phone size={16} />
               CONTACTEZ-NOUS
             </button>
-            <LanguageSwitcher />
             <CartIcon />
           </div>
         </div>
