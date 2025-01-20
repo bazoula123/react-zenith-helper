@@ -1,80 +1,42 @@
 {
-  "brand": {
-    "title": "Le Monde de Fiori",
-    "imageAlt": "Fiori brand",
-    "intro": "Fiori, fondée en 2014, est une marque tunisienne qui s'intègre dans l'univers du prêt-à-porter et de la maroquinerie haut de gamme pour homme.",
-    "products": "Nous proposons une large gamme d'articles, comprenant des chemises, des polos, des pantalons, des costumes, des vestes, et plus encore.",
-    "accessories": "Nous proposons également une large gamme de maroquinerie telle que des portefeuilles, des ceintures, des porte-chéquiers, des porte-documents, des porte-passeports, des serviettes, et plus encore.",
-    "learnMore": "En Savoir Plus !"
-  },
-  "topNav": {
-    "freeShipping": "Livraison gratuite à partir de 299 TND",
-    "contactUs": "CONTACTEZ-NOUS"
-  },
-  "navigation": {
-    "mondeFiori": "Le monde Fiori",
-    "giftUniverse": "L'univers Cadeaux",
-    "readyToWear": "Le prêt à porter",
-    "accessories": "Accessoires",
-    "outlet": "Outlet"
-  },
-  "footer": {
-    "newsletter": {
-      "title": "Abonnez-vous aujourd'hui et obtenez 5% de réduction sur votre premier achat",
-      "placeholder": "Entrez votre email",
-      "button": "S'abonner",
-      "success": "Inscription réussie !",
-      "successMessage": "Merci de vous être inscrit à notre newsletter. Votre réduction de 5% a été appliquée à votre panier.",
-      "error": "Déjà inscrit",
-      "errorMessage": "Vous êtes déjà inscrit à notre newsletter.",
-      "generalError": "Une erreur s'est produite lors de l'inscription. Veuillez réessayer."
-    },
-    "contact": {
-      "title": "CONTACTEZ-NOUS",
-      "chat": "Chat en direct",
-      "email": "Envoyez-nous un email",
-      "followUs": "Suivez-nous"
-    },
-    "about": {
-      "title": "À PROPOS",
-      "whatIsFiori": "Qu'est-ce que Fiori",
-      "impactReport": "Rapport d'impact"
-    },
-    "customerService": {
-      "title": "SERVICE CLIENT",
-      "contact": "Nous contacter",
-      "delivery": "Informations de livraison",
-      "faq": "FAQ",
-      "returns": "Politique de retour"
-    },
-    "pages": {
-      "title": "NOS PAGES",
-      "mondeFiori": "Le monde Fiori",
-      "giftUniverse": "L'univers Cadeaux",
-      "readyToWear": "Le prét à porter",
-      "accessories": "Accessoires",
-      "customMade": "Le sur mesure",
-      "outlet": "Outlet"
-    },
-    "shipping": {
-      "worldwide": "Livraison mondiale",
-      "payment": "Nous acceptons"
-    },
-    "copyright": {
-      "text": "© 2024 FioriForYou",
-      "madeWith": "Fait avec ❤️ en Tunisie par",
-      "developer": "Iheb Chebbi"
+  "hero": {
+    "titles": {
+      "giftUniverse": "Univers cadeau",
+      "newCollection": "Nouvelle collection",
+      "customTailoring": "Le sur mesure"
     }
   },
-  "common": {
-    "loading": "Chargement...",
-    "error": "Une erreur s'est produite",
-    "retry": "Réessayer",
-    "close": "Fermer"
+  "brandIntro": {
+    "title": "Le Monde de Fiori",
+    "description": {
+      "part1": "Fiori, fondée en 2014, est une marque tunisienne qui s'intègre dans l'univers du prêt-à-porter et de la maroquinerie haut de gamme pour homme.",
+      "part2": "Nous proposons une large gamme d'articles, comprenant des chemises, des polos, des pantalons, des costumes, des vestes, et plus encore.",
+      "part3": "Nous proposons également une large gamme de maroquinerie telle que des portefeuilles, des ceintures, des porte-chéquiers, des porte-documents, des porte-passeports, des serviettes, et plus encore."
+    },
+    "learnMore": "En Savoir Plus !"
   },
-  "errors": {
-    "unexpectedError": "Une erreur inattendue s'est produite.",
-    "contactTech": "Contactez notre technicien directement :",
-    "refreshPage": "Rafraîchir la page"
+  "giftCollection": {
+    "title": "Le monde fiori",
+    "items": {
+      "giftGuide": "GIFT GUIDE",
+      "luxuryGifts": "LUXURY GIFTS",
+      "mustHaveGifts": "MUST HAVE GIFTS",
+      "giftCards": "GIFT CARDS",
+      "services": "SERVICES"
+    }
+  },
+  "men": {
+    "title": "Mens Essential",
+    "categories": {
+      "clothes": "Clothes",
+      "gifts": "Gifts",
+      "accessories": "Accessories"
+    }
+  },
+  "cart": {
+    "addedToCart": {
+      "title": "Article ajouté au pack",
+      "description": "L'article a été ajouté avec succès à votre pack cadeau"
+    }
   }
 }

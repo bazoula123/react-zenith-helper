@@ -6,34 +6,31 @@ import MondeFioriSection from './menu-sections/MondeFioriSection';
 import PretAPorterSection from './menu-sections/PretAPorterSection';
 import AccessoiresSection from './menu-sections/AccessoiresSection';
 import SubMenuSection from '../navigation/SubMenuSection';
-import { useTranslation } from 'react-i18next';
 
 const MainNavbarMenus = () => {
-  const { t } = useTranslation();
-
   return (
     <NavigationMenuList className="flex flex-col lg:flex-row lg:gap-4 gap-4  items-center">
-      <NavMenuItem title={t('navigation.mondeFiori')} image="/Menu/mondefiori.png">
+      <NavMenuItem title="Le monde Fiori" image="/Menu/mondefiori.png">
         <MondeFioriSection />
       </NavMenuItem>
 
       <NavMenuItem 
-        title={t('navigation.giftUniverse')}
+        title="L'univers Cadeaux" 
         image="/Menu/Universcadeau.png"
         href="/univers-cadeaux"
       >
         <GiftUniverseMenu />
       </NavMenuItem>
 
-      <NavMenuItem title={t('navigation.readyToWear')} image="/Menu/lepresaporte.png">
+      <NavMenuItem title="Le prêt à porter" image="/Menu/lepresaporte.png">
         <PretAPorterSection />
       </NavMenuItem>
 
-      <NavMenuItem title={t('navigation.accessories')} image="/Menu/accessoires.png">
+      <NavMenuItem title="Accessoires" image="/Menu/accessoires.png">
         <AccessoiresSection />
       </NavMenuItem>
 
-      <NavMenuItem title={t('navigation.outlet')} image="/Menu/Ooutlet.png">
+      <NavMenuItem title="Outlet" image="/Menu/Ooutlet.png">
         <div className="grid grid-cols-2 gap-3">
           <SubMenuSection
             title="Homme"
