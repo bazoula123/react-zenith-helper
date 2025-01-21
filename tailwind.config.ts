@@ -47,6 +47,11 @@ export default {
       fontFamily: {
         sans: ["Montserrat", "sans-serif"],
         body: ["Open Sans", "sans-serif"],
+        roboto: ["Roboto", "sans-serif"],
+        lato: ["Lato", "sans-serif"],
+        oswald: ["Oswald", "sans-serif"],
+        playfair: ["Playfair Display", "serif"],
+        poppins: ["Poppins", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

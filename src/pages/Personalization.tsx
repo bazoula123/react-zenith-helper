@@ -3,9 +3,15 @@ import { Canvas, Text, Image as FabricImage } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Image, 
   Type, 
@@ -27,12 +33,24 @@ interface UploadedImage {
   name: string;
 }
 
+const fonts = [
+  { name: "Montserrat", value: "Montserrat" },
+  { name: "Open Sans", value: "Open Sans" },
+  { name: "Roboto", value: "Roboto" },
+  { name: "Lato", value: "Lato" },
+  { name: "Oswald", value: "Oswald" },
+  { name: "Playfair Display", value: "Playfair Display" },
+  { name: "Poppins", value: "Poppins" },
+];
+
 const Personalization = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState([16]);
   const [textColor, setTextColor] = useState("#000000");
+  const [selectedFont, setSelectedFont] = useState("Montserrat");
+  const [activeText, setActiveText] = useState<Text | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,30 +90,58 @@ const Personalization = () => {
     };
   }, []);
 
-  const handleAddText = () => {
-    if (!canvas || !text) return;
-
-    const fabricText = new Text(text, {
-      left: canvas.width! / 2,
-      top: canvas.height! / 2,
-      fontSize: fontSize[0],
-      fill: textColor,
-      originX: 'center',
-      originY: 'center',
-      hasControls: true,
-      hasBorders: true,
-      lockUniScaling: false,
-      transparentCorners: false,
-      cornerColor: 'rgba(102,153,255,0.5)',
-      cornerSize: 12,
-      padding: 5
+  // Load fonts
+  useEffect(() => {
+    fonts.forEach(font => {
+      const link = document.createElement('link');
+      link.href = `https://fonts.googleapis.com/css2?family=${font.value.replace(' ', '+')}:wght@400;700&display=swap`;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
     });
+  }, []);
 
-    canvas.add(fabricText);
-    canvas.setActiveObject(fabricText);
+  // Auto-update text as user types
+  useEffect(() => {
+    if (!canvas) return;
+
+    if (!activeText) {
+      // Create new text object if none exists
+      const fabricText = new Text(text, {
+        left: canvas.width! / 2,
+        top: canvas.height! / 2,
+        fontSize: fontSize[0],
+        fill: textColor,
+        fontFamily: selectedFont,
+        originX: 'center',
+        originY: 'center',
+        hasControls: true,
+        hasBorders: true,
+        lockUniScaling: false,
+        transparentCorners: false,
+        cornerColor: 'rgba(102,153,255,0.5)',
+        cornerSize: 12,
+        padding: 5
+      });
+
+      canvas.add(fabricText);
+      canvas.setActiveObject(fabricText);
+      setActiveText(fabricText);
+    } else {
+      // Update existing text
+      activeText.set('text', text);
+    }
+
     canvas.renderAll();
-    setText("");
-    toast.success("Texte ajouté au design !");
+  }, [text, canvas]);
+
+  // Update font when changed
+  const handleFontChange = (value: string) => {
+    setSelectedFont(value);
+    if (activeText && canvas) {
+      activeText.set('fontFamily', value);
+      canvas.renderAll();
+      toast.success("Police mise à jour !");
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,7 +226,6 @@ const Personalization = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Tools Sidebar */}
           <div className="lg:col-span-3 space-y-6">
             <Card className="p-6 space-y-6">
               <div>
@@ -196,12 +241,29 @@ const Personalization = () => {
                       <Input
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        placeholder="Entrez du texte..."
+                        placeholder="Tapez votre texte..."
                         className="flex-1"
                       />
-                      <Button onClick={handleAddText} size="icon" variant="secondary">
-                        <Type className="h-4 w-4" />
-                      </Button>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-sm font-medium">Police de Caractères</Label>
+                      <Select value={selectedFont} onValueChange={handleFontChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Choisir une police" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fonts.map((font) => (
+                            <SelectItem 
+                              key={font.value} 
+                              value={font.value}
+                              style={{ fontFamily: font.value }}
+                            >
+                              {font.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2 mt-4">
@@ -281,7 +343,6 @@ const Personalization = () => {
             </Card>
           </div>
 
-          {/* Canvas Area */}
           <div className="lg:col-span-6">
             <Card className="p-6">
               <div className="aspect-[5/6] w-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
@@ -290,7 +351,6 @@ const Personalization = () => {
             </Card>
           </div>
 
-          {/* Uploaded Images Panel */}
           <div className="lg:col-span-3">
             <Card className="p-6">
               <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
