@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart, Menu, X, Heart, ClipboardList, Search, PenLine, Trash2 } from "lucide-react";
 import Footer from "./Footer";
 import { Link, useNavigate } from 'react-router-dom';
