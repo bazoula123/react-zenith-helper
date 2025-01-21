@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Layout } from './Layout';
 import LoadingScreen from './LoadingScreen';
-import { Navigation } from './Navigation';
-import Footer from './Footer';
 
 interface PageWrapperProps {
   children: React.ReactNode;
@@ -21,16 +20,16 @@ const PageWrapper = ({ children }: PageWrapperProps) => {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [children]);
+  }, [children]); // Reset loading state when children (content) changes
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-grow">
-        {isLoading ? <LoadingScreen /> : children}
-      </main>
-      <Footer />
-    </div>
+    <Layout>
+      {isLoading ? (
+        <LoadingScreen />
+      ) : (
+        children
+      )}
+    </Layout>
   );
 };
 
