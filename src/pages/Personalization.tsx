@@ -42,10 +42,9 @@ const Personalization = () => {
       backgroundColor: "#f8f9fa",
     });
 
-    // Load the t-shirt mockup
-    fabricCanvas.loadImage("/mockuptshirt.png", {
+    // Load the t-shirt mockup using FabricImage.fromURL
+    FabricImage.fromURL("/mockuptshirt.png", {
       crossOrigin: 'anonymous',
-      signal: new AbortController().signal
     }).then((fabricImage) => {
       if (fabricImage) {
         fabricImage.scaleToWidth(500);
@@ -95,9 +94,9 @@ const Personalization = () => {
     reader.onload = (e) => {
       if (!e.target?.result) return;
       
-      canvas.loadImage(e.target.result.toString(), {
+      // Use FabricImage.fromURL instead of canvas.loadImage
+      FabricImage.fromURL(e.target.result.toString(), {
         crossOrigin: 'anonymous',
-        signal: new AbortController().signal
       }).then((fabricImage) => {
         if (fabricImage) {
           fabricImage.scaleToWidth(150);
