@@ -15,7 +15,9 @@ import {
   RefreshCw,
   Save,
   Palette,
-  Move
+  Move,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,6 +32,7 @@ const Personalization = () => {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState([16]);
+  const [textColor, setTextColor] = useState("#000000");
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +58,9 @@ const Personalization = () => {
       }
     }).catch(console.error);
 
+    // Enable touch events
+    fabricCanvas.set('allowTouchScrolling', true);
+
     fabricCanvas.on("object:modified", () => {
       toast.success("Design mis à jour !");
     });
@@ -73,9 +79,16 @@ const Personalization = () => {
       left: canvas.width! / 2,
       top: canvas.height! / 2,
       fontSize: fontSize[0],
-      fill: "#000000",
+      fill: textColor,
       originX: 'center',
-      originY: 'center'
+      originY: 'center',
+      hasControls: true,
+      hasBorders: true,
+      lockUniScaling: false,
+      transparentCorners: false,
+      cornerColor: 'rgba(102,153,255,0.5)',
+      cornerSize: 12,
+      padding: 5
     });
 
     canvas.add(fabricText);
@@ -134,6 +147,30 @@ const Personalization = () => {
     toast.success("Design téléchargé !");
   };
 
+  const updateActiveTextColor = () => {
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'text') {
+      (activeObject as Text).set('fill', textColor);
+      canvas.renderAll();
+      toast.success("Couleur du texte mise à jour !");
+    }
+  };
+
+  const adjustTextSize = (increase: boolean) => {
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'text') {
+      const currentSize = (activeObject as Text).fontSize || 16;
+      const newSize = increase ? currentSize + 2 : currentSize - 2;
+      if (newSize >= 8 && newSize <= 72) {
+        (activeObject as Text).set('fontSize', newSize);
+        canvas.renderAll();
+        toast.success(`Taille du texte ${increase ? 'augmentée' : 'diminuée'} !`);
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-7xl mx-auto">
@@ -168,15 +205,30 @@ const Personalization = () => {
                     </div>
                     
                     <div className="space-y-2 mt-4">
-                      <Label className="text-sm font-medium">Taille de Police</Label>
-                      <Slider
-                        value={fontSize}
-                        onValueChange={setFontSize}
-                        min={8}
-                        max={72}
-                        step={1}
-                        className="my-4"
-                      />
+                      <Label className="text-sm font-medium">Couleur du Texte</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="w-16 h-10 p-1"
+                        />
+                        <Button onClick={updateActiveTextColor} variant="outline" className="flex-1">
+                          Appliquer la Couleur
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-sm font-medium">Taille du Texte</Label>
+                      <div className="flex gap-2">
+                        <Button onClick={() => adjustTextSize(false)} size="icon" variant="outline">
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={() => adjustTextSize(true)} size="icon" variant="outline">
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -233,7 +285,7 @@ const Personalization = () => {
           <div className="lg:col-span-6">
             <Card className="p-6">
               <div className="aspect-[5/6] w-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
-                <canvas ref={canvasRef} className="max-w-full shadow-lg" />
+                <canvas ref={canvasRef} className="max-w-full shadow-lg touch-manipulation" />
               </div>
             </Card>
           </div>
