@@ -1,27 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { Canvas, Text } from "fabric";
 import { Card } from "@/components/ui/card";
-import { Image, Palette, X } from "lucide-react";
+import { Image, Palette, X, Search, Coffee, Shirt, Briefcase, Newspaper, Book, ShoppingBag } from "lucide-react";
 import DesignTools from "@/components/personalization/DesignTools";
 import ImageUploader from "@/components/personalization/ImageUploader";
 import UploadedImagesList from "@/components/personalization/UploadedImagesList";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
-interface UploadedImage {
+interface ProductCategory {
   id: string;
-  url: string;
   name: string;
+  icon: React.ElementType;
 }
 
-const fonts = [
-  { name: "Montserrat", value: "Montserrat" },
-  { name: "Open Sans", value: "Open Sans" },
-  { name: "Roboto", value: "Roboto" },
-  { name: "Lato", value: "Lato" },
-  { name: "Oswald", value: "Oswald" },
-  { name: "Playfair Display", value: "Playfair Display" },
-  { name: "Poppins", value: "Poppins" },
+const productCategories: ProductCategory[] = [
+  { id: 'mugs', name: 'Tasses', icon: Coffee },
+  { id: 'tshirts', name: 'T-shirts', icon: Shirt },
+  { id: 'blouses', name: 'Blouses de travail', icon: Briefcase },
+  { id: 'flyers', name: 'Flyers', icon: Newspaper },
+  { id: 'notebooks', name: 'Carnets', icon: Book },
+  { id: 'bags', name: 'Sacs', icon: ShoppingBag },
 ];
 
 const Personalization = () => {
@@ -35,6 +35,12 @@ const Personalization = () => {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const isMobile = useIsMobile();
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const filteredCategories = productCategories.filter(category =>
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleDeleteActiveObject = () => {
     if (!canvas) return;
@@ -193,7 +199,49 @@ const Personalization = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
-          <div className="lg:col-span-8 order-first">
+          {/* Product Selection Sidebar */}
+          <div className="lg:col-span-3 order-first">
+            <Card className="p-4">
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Rechercher un produit..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 w-full"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-medium text-sm text-gray-500">Catégories de produits</h3>
+                  <div className="space-y-1">
+                    {filteredCategories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setSelectedCategory(category.id);
+                          toast.success(`Catégorie ${category.name} sélectionnée`);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                          selectedCategory === category.id
+                            ? "bg-primary text-white"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <category.icon className="h-5 w-5" />
+                        <span>{category.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Canvas Area */}
+          <div className="lg:col-span-6">
             <Card className="p-4 lg:p-6">
               <div className="w-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden relative min-h-[600px]">
                 <canvas 
@@ -217,7 +265,8 @@ const Personalization = () => {
             </Card>
           </div>
 
-          <div className="lg:col-span-4">
+          {/* Design Tools */}
+          <div className="lg:col-span-3">
             <Card className="p-4 lg:p-6 space-y-6">
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2 mb-6 justify-start">
