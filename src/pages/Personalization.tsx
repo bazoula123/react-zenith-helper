@@ -15,6 +15,24 @@ interface ProductCategory {
   icon: React.ElementType;
 }
 
+// Add the missing UploadedImage interface
+interface UploadedImage {
+  id: string;
+  url: string;
+  name: string;
+}
+
+// Add the fonts array that was missing
+const fonts = [
+  { name: "Montserrat", value: "Montserrat" },
+  { name: "Open Sans", value: "Open Sans" },
+  { name: "Roboto", value: "Roboto" },
+  { name: "Lato", value: "Lato" },
+  { name: "Oswald", value: "Oswald" },
+  { name: "Playfair Display", value: "Playfair Display" },
+  { name: "Poppins", value: "Poppins" },
+];
+
 const productCategories: ProductCategory[] = [
   { id: 'mugs', name: 'Tasses', icon: Coffee },
   { id: 'tshirts', name: 'T-shirts', icon: Shirt },
