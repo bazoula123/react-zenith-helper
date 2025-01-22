@@ -51,15 +51,21 @@ const CanvasContainer = ({
     fabricCanvas.add(placeholderText);
     fabricCanvas.renderAll();
 
+    // Update delete button position whenever an object is selected
     fabricCanvas.on('selection:created', (e) => {
       const obj = e.selected?.[0];
-      if (deleteButtonRef.current) {
-        const bounds = obj?.getBoundingRect();
-        if (bounds) {
-          deleteButtonRef.current.style.display = 'block';
-          deleteButtonRef.current.style.left = `${bounds.left + bounds.width + 10}px`;
-          deleteButtonRef.current.style.top = `${bounds.top}px`;
-        }
+      if (deleteButtonRef.current && obj) {
+        const bounds = obj.getBoundingRect();
+        const zoom = fabricCanvas.getZoom();
+        const offset = fabricCanvas.calcOffset();
+        
+        // Calculate position relative to the canvas container
+        const buttonX = (bounds.left + bounds.width) * zoom + offset.left;
+        const buttonY = bounds.top * zoom + offset.top;
+        
+        deleteButtonRef.current.style.display = 'block';
+        deleteButtonRef.current.style.left = `${buttonX}px`;
+        deleteButtonRef.current.style.top = `${buttonY}px`;
       }
     });
 
@@ -69,11 +75,48 @@ const CanvasContainer = ({
       }
     });
 
+    // Update delete button position during object movement
     fabricCanvas.on('object:moving', (e) => {
       if (deleteButtonRef.current && e.target) {
         const bounds = e.target.getBoundingRect();
-        deleteButtonRef.current.style.left = `${bounds.left + bounds.width + 10}px`;
-        deleteButtonRef.current.style.top = `${bounds.top}px`;
+        const zoom = fabricCanvas.getZoom();
+        const offset = fabricCanvas.calcOffset();
+        
+        const buttonX = (bounds.left + bounds.width) * zoom + offset.left;
+        const buttonY = bounds.top * zoom + offset.top;
+        
+        deleteButtonRef.current.style.left = `${buttonX}px`;
+        deleteButtonRef.current.style.top = `${buttonY}px`;
+      }
+    });
+
+    // Update delete button position during scaling
+    fabricCanvas.on('object:scaling', (e) => {
+      if (deleteButtonRef.current && e.target) {
+        const bounds = e.target.getBoundingRect();
+        const zoom = fabricCanvas.getZoom();
+        const offset = fabricCanvas.calcOffset();
+        
+        const buttonX = (bounds.left + bounds.width) * zoom + offset.left;
+        const buttonY = bounds.top * zoom + offset.top;
+        
+        deleteButtonRef.current.style.left = `${buttonX}px`;
+        deleteButtonRef.current.style.top = `${buttonY}px`;
+      }
+    });
+
+    // Update delete button position during rotation
+    fabricCanvas.on('object:rotating', (e) => {
+      if (deleteButtonRef.current && e.target) {
+        const bounds = e.target.getBoundingRect();
+        const zoom = fabricCanvas.getZoom();
+        const offset = fabricCanvas.calcOffset();
+        
+        const buttonX = (bounds.left + bounds.width) * zoom + offset.left;
+        const buttonY = bounds.top * zoom + offset.top;
+        
+        deleteButtonRef.current.style.left = `${buttonX}px`;
+        deleteButtonRef.current.style.top = `${buttonY}px`;
       }
     });
 
@@ -148,12 +191,10 @@ const CanvasContainer = ({
         <button
           ref={deleteButtonRef}
           onClick={onObjectDelete}
-          className="absolute hidden bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors w-6 h-6 flex items-center justify-center"
+          className="absolute hidden bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors w-6 h-6 flex items-center justify-center cursor-pointer"
           style={{
             zIndex: 1000,
-            right: '10px',
-            top: '10px',
-            padding: 0,
+            transform: 'translate(50%, -50%)',
           }}
         >
           <X className="h-4 w-4" />
