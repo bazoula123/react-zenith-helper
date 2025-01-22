@@ -9,21 +9,21 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
+// Define interfaces at the top level
 interface ProductCategory {
   id: string;
   name: string;
   icon: React.ElementType;
 }
 
-// Add the missing UploadedImage interface
-interface UploadedImage {
+export interface UploadedImage {
   id: string;
   url: string;
   name: string;
 }
 
-// Add the fonts array that was missing
-const fonts = [
+// Define the fonts array at the module level
+export const fonts = [
   { name: "Montserrat", value: "Montserrat" },
   { name: "Open Sans", value: "Open Sans" },
   { name: "Roboto", value: "Roboto" },
