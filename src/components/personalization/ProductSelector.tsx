@@ -43,13 +43,21 @@ const ProductSelector = ({
               onCategorySelect(category.id);
               toast.success(`Catégorie ${category.name} sélectionnée`);
             }}
-            className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+            className={`cursor-pointer transition-all duration-300 hover:shadow-lg overflow-hidden ${
               selectedCategory === category.id
                 ? "border-2 border-primary"
                 : "hover:border-primary/50"
             }`}
           >
-            <div className="flex flex-col space-y-3">
+            <div className="aspect-w-16 aspect-h-9 relative">
+              <img
+                src={category.imageUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb"}
+                alt={category.name}
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </div>
+            <div className="p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <category.icon className="h-6 w-6 text-primary" />
                 <h3 className="font-medium">{category.name}</h3>
