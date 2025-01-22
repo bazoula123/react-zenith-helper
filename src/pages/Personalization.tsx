@@ -12,54 +12,12 @@ import UploadedImagesList from "@/components/personalization/UploadedImagesList"
 import { Canvas, Text } from "fabric";
 
 const productCategories: ProductCategory[] = [
-  { 
-    id: 'mugs', 
-    name: 'Tasses', 
-    icon: Coffee,
-    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-    description: 'Personnalisez vos tasses avec votre design unique',
-    startingPrice: '30.00'
-  },
-  { 
-    id: 'tshirts', 
-    name: 'T-shirts', 
-    icon: Shirt,
-    imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b',
-    description: 'Créez des t-shirts personnalisés qui vous ressemblent',
-    startingPrice: '35.00'
-  },
-  { 
-    id: 'blouses', 
-    name: 'Blouses de travail', 
-    icon: Briefcase,
-    imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb',
-    description: 'Des blouses professionnelles à votre image',
-    startingPrice: '45.00'
-  },
-  { 
-    id: 'flyers', 
-    name: 'Flyers', 
-    icon: Newspaper,
-    imageUrl: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07',
-    description: 'Concevez des flyers qui captent l\'attention',
-    startingPrice: '25.00'
-  },
-  { 
-    id: 'notebooks', 
-    name: 'Carnets', 
-    icon: Book,
-    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-    description: 'Des carnets personnalisés pour vos idées',
-    startingPrice: '20.00'
-  },
-  { 
-    id: 'bags', 
-    name: 'Sacs', 
-    icon: ShoppingBag,
-    imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b',
-    description: 'Des sacs uniques à votre style',
-    startingPrice: '40.00'
-  },
+  { id: 'mugs', name: 'Tasses', icon: Coffee },
+  { id: 'tshirts', name: 'T-shirts', icon: Shirt },
+  { id: 'blouses', name: 'Blouses de travail', icon: Briefcase },
+  { id: 'flyers', name: 'Flyers', icon: Newspaper },
+  { id: 'notebooks', name: 'Carnets', icon: Book },
+  { id: 'bags', name: 'Sacs', icon: ShoppingBag },
 ];
 
 const Personalization = () => {

@@ -4,7 +4,6 @@ export interface ProductCategory {
   icon: React.ElementType;
   description?: string;
   startingPrice?: string;
-  imageUrl?: string;
 }
 
 export interface UploadedImage {
