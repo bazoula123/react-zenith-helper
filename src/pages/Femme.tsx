@@ -1,9 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Layout } from "../components/Layout";
 
 const Femme = () => {
   return (
-    <Layout>
+    <>
       <div className="container mx-auto px-4">
         <h1 className="text-2xl font-bold mb-8">Tenues de travail pour Femme</h1>
         
@@ -106,7 +105,7 @@ const Femme = () => {
           </div>
         </section>
       </div>
-    </Layout>
+    </>
   );
 };
 

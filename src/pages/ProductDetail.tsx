@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '../components/Layout';
 import { Minus, Plus, ShoppingBag, ClipboardList, Heart } from 'lucide-react';
 import ProductGrid from '../components/ProductGrid';
 
@@ -43,7 +42,7 @@ const ProductDetail = () => {
   ];
 
   return (
-    <Layout>
+    <>
       <div className="container mx-auto px-4 py-8">
         {/* Product Section */}
         <div className="flex flex-col lg:flex-row gap-8 mb-16">
@@ -193,7 +192,7 @@ const ProductDetail = () => {
           <ProductGrid products={relatedProducts} onAddToCart={() => {}} />
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

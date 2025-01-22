@@ -10,14 +10,16 @@ import Personalization from './pages/Personalization';
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
-        <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
-        <Route path="/devis" element={<PageWrapper><Devis /></PageWrapper>} />
-        <Route path="/metiers" element={<PageWrapper><Metiers /></PageWrapper>} />
-        <Route path="/marques" element={<PageWrapper><Marques /></PageWrapper>} />
-        <Route path="/personalization" element={<PageWrapper><Personalization /></PageWrapper>} />
-      </Routes>
+      <PageWrapper>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/devis" element={<Devis />} />
+          <Route path="/metiers" element={<Metiers />} />
+          <Route path="/marques" element={<Marques />} />
+          <Route path="/personalization" element={<Personalization />} />
+        </Routes>
+      </PageWrapper>
     </Router>
   );
 }

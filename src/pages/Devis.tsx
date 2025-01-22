@@ -82,7 +82,7 @@ const Devis = () => {
   };
 
   return (
-    <Layout>
+    <>
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-primary mb-6">Sélectionnez un produit</h2>
@@ -247,7 +247,7 @@ const Devis = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

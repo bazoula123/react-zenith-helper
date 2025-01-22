@@ -1,4 +1,3 @@
-import { Layout } from "../components/Layout";
 import { motion } from "framer-motion";
 
 const metiers = [
@@ -42,7 +41,7 @@ const metiers = [
 
 const Metiers = () => {
   return (
-    <Layout>
+    <>
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         {/* Hero Section */}
         <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
@@ -116,7 +115,7 @@ const Metiers = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

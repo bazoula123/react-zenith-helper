@@ -1,30 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Canvas, Text, Image as FabricImage } from "fabric";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Canvas, Text } from "fabric";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Image, 
-  Type, 
-  Upload,
-  Download,
-  Trash2,
-  RefreshCw,
-  Save,
-  Palette,
-  Move,
-  ArrowUp,
-  ArrowDown
-} from "lucide-react";
+import { Image, Palette, X } from "lucide-react";
+import DesignTools from "@/components/personalization/DesignTools";
+import ImageUploader from "@/components/personalization/ImageUploader";
+import UploadedImagesList from "@/components/personalization/UploadedImagesList";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
 interface UploadedImage {
@@ -52,60 +33,119 @@ const Personalization = () => {
   const [selectedFont, setSelectedFont] = useState("Montserrat");
   const [activeText, setActiveText] = useState<Text | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleDeleteActiveObject = () => {
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject) {
+      canvas.remove(activeObject);
+      canvas.renderAll();
+      
+      if (activeObject.type === 'image') {
+        const imageUrl = (activeObject as any)._element?.src;
+        setUploadedImages(prev => prev.filter(img => img.url !== imageUrl));
+      }
+      
+      if (activeObject.type === 'text') {
+        setText('');
+        setActiveText(null);
+      }
+      
+      if (deleteButtonRef.current) {
+        deleteButtonRef.current.style.display = 'none';
+      }
+      toast.success("Élément supprimé !");
+    }
+  };
+
+  const handleDeleteImage = (imageToDelete: UploadedImage) => {
+    setUploadedImages(prev => prev.filter(img => img.id !== imageToDelete.id));
+  };
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    const canvasWidth = isMobile ? window.innerWidth - 32 : 500;
+    const canvasHeight = isMobile ? window.innerHeight * 0.5 : 600;
+
     const fabricCanvas = new Canvas(canvasRef.current, {
-      width: 500,
-      height: 600,
+      width: canvasWidth,
+      height: canvasHeight,
       backgroundColor: "#f8f9fa",
+      preserveObjectStacking: true,
     });
 
-    // Load the t-shirt mockup using FabricImage.fromURL
-    FabricImage.fromURL("/mockuptshirt.png", {
-      crossOrigin: 'anonymous',
-    }).then((fabricImage) => {
-      if (fabricImage) {
-        fabricImage.scaleToWidth(500);
-        fabricImage.selectable = false;
-        fabricCanvas.centerObject(fabricImage);
-        fabricCanvas.add(fabricImage);
-        fabricCanvas.renderAll();
+    const placeholderText = new Text("Tapez votre texte ici...", {
+      left: fabricCanvas.width! / 2,
+      top: fabricCanvas.height! / 2,
+      fontSize: 20,
+      fill: "#999999",
+      fontFamily: selectedFont,
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+      opacity: 0.7
+    });
+
+    fabricCanvas.add(placeholderText);
+    fabricCanvas.renderAll();
+
+    fabricCanvas.on('selection:created', (e) => {
+      const obj = e.selected?.[0];
+      if (obj instanceof Text) {
+        setActiveText(obj);
       }
-    }).catch(console.error);
+      if (deleteButtonRef.current) {
+        const bounds = obj?.getBoundingRect();
+        if (bounds) {
+          deleteButtonRef.current.style.display = 'block';
+          deleteButtonRef.current.style.left = `${bounds.left + bounds.width + 10}px`;
+          deleteButtonRef.current.style.top = `${bounds.top}px`;
+        }
+      }
+    });
 
-    // Enable touch events
-    fabricCanvas.set('allowTouchScrolling', true);
+    fabricCanvas.on('selection:cleared', () => {
+      setActiveText(null);
+      if (deleteButtonRef.current) {
+        deleteButtonRef.current.style.display = 'none';
+      }
+    });
 
-    fabricCanvas.on("object:modified", () => {
-      toast.success("Design mis à jour !");
+    fabricCanvas.on('object:moving', (e) => {
+      if (deleteButtonRef.current && e.target) {
+        const bounds = e.target.getBoundingRect();
+        deleteButtonRef.current.style.left = `${bounds.left + bounds.width + 10}px`;
+        deleteButtonRef.current.style.top = `${bounds.top}px`;
+      }
     });
 
     setCanvas(fabricCanvas);
 
+    const handleResize = () => {
+      const newWidth = isMobile ? window.innerWidth - 32 : 500;
+      const newHeight = isMobile ? window.innerHeight * 0.5 : 600;
+      fabricCanvas.setDimensions({ width: newWidth, height: newHeight });
+      fabricCanvas.renderAll();
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
       fabricCanvas.dispose();
+      window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isMobile]);
 
-  // Load fonts
-  useEffect(() => {
-    fonts.forEach(font => {
-      const link = document.createElement('link');
-      link.href = `https://fonts.googleapis.com/css2?family=${font.value.replace(' ', '+')}:wght@400;700&display=swap`;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    });
-  }, []);
-
-  // Auto-update text as user types
   useEffect(() => {
     if (!canvas) return;
 
-    if (!activeText) {
-      // Create new text object if none exists
+    const existingTexts = canvas.getObjects().filter(obj => obj instanceof Text);
+    existingTexts.forEach(textObj => canvas.remove(textObj));
+
+    if (text) {
       const fabricText = new Text(text, {
         left: canvas.width! / 2,
         top: canvas.height! / 2,
@@ -127,260 +167,117 @@ const Personalization = () => {
       canvas.setActiveObject(fabricText);
       setActiveText(fabricText);
     } else {
-      // Update existing text
-      activeText.set('text', text);
+      const placeholderText = new Text("Tapez votre texte ici...", {
+        left: canvas.width! / 2,
+        top: canvas.height! / 2,
+        fontSize: 20,
+        fill: "#999999",
+        fontFamily: selectedFont,
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+        opacity: 0.7
+      });
+      canvas.add(placeholderText);
     }
 
     canvas.renderAll();
   }, [text, canvas]);
 
-  // Update font when changed
-  const handleFontChange = (value: string) => {
-    setSelectedFont(value);
-    if (activeText && canvas) {
-      activeText.set('fontFamily', value);
-      canvas.renderAll();
-      toast.success("Police mise à jour !");
-    }
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canvas || !event.target.files?.[0]) return;
-
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      if (!e.target?.result) return;
-      
-      // Use FabricImage.fromURL instead of canvas.loadImage
-      FabricImage.fromURL(e.target.result.toString(), {
-        crossOrigin: 'anonymous',
-      }).then((fabricImage) => {
-        if (fabricImage) {
-          fabricImage.scaleToWidth(150);
-          canvas.centerObject(fabricImage);
-          canvas.add(fabricImage);
-          canvas.renderAll();
-          
-          setUploadedImages(prev => [...prev, {
-            id: Date.now().toString(),
-            url: e.target.result as string,
-            name: file.name
-          }]);
-          
-          toast.success("Image ajoutée au design !");
-        }
-      }).catch(console.error);
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleDownload = () => {
-    if (!canvas) return;
-
-    const dataURL = canvas.toDataURL({
-      format: "png",
-      quality: 1,
-      multiplier: 2
-    });
-
-    const link = document.createElement("a");
-    link.download = "design.png";
-    link.href = dataURL;
-    link.click();
-    toast.success("Design téléchargé !");
-  };
-
-  const updateActiveTextColor = () => {
-    if (!canvas) return;
-    const activeObject = canvas.getActiveObject();
-    if (activeObject && activeObject.type === 'text') {
-      (activeObject as Text).set('fill', textColor);
-      canvas.renderAll();
-      toast.success("Couleur du texte mise à jour !");
-    }
-  };
-
-  const adjustTextSize = (increase: boolean) => {
-    if (!canvas) return;
-    const activeObject = canvas.getActiveObject();
-    if (activeObject && activeObject.type === 'text') {
-      const currentSize = (activeObject as Text).fontSize || 16;
-      const newSize = increase ? currentSize + 2 : currentSize - 2;
-      if (newSize >= 8 && newSize <= 72) {
-        (activeObject as Text).set('fontSize', newSize);
-        canvas.renderAll();
-        toast.success(`Taille du texte ${increase ? 'augmentée' : 'diminuée'} !`);
-      }
-    }
-  };
-
   return (
-    <div className="container mx-auto py-12 px-4">
+    <div className="container mx-auto py-6 px-4 lg:py-12 max-w-[100vw] overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Personnalisation</h1>
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-primary mb-2">Personnalisation</h1>
           <p className="text-gray-600">Créez votre design unique en quelques clics</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            <Card className="p-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
+          <div className="lg:col-span-8 order-first">
+            <Card className="p-4 lg:p-6">
+              <div className="w-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden relative min-h-[600px]">
+                <canvas 
+                  ref={canvasRef} 
+                  className="max-w-full touch-manipulation shadow-lg"
+                />
+                <button
+                  ref={deleteButtonRef}
+                  onClick={handleDeleteActiveObject}
+                  className="absolute hidden bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors w-6 h-6 flex items-center justify-center"
+                  style={{
+                    zIndex: 1000,
+                    right: '10px',
+                    top: '10px',
+                    padding: 0,
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-4">
+            <Card className="p-4 lg:p-6 space-y-6">
               <div>
-                <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2 mb-6 justify-start">
                   <Palette className="h-5 w-5" />
                   Outils de Design
                 </h2>
                 
+                <DesignTools
+                  text={text}
+                  setText={setText}
+                  selectedFont={selectedFont}
+                  setSelectedFont={setSelectedFont}
+                  textColor={textColor}
+                  setTextColor={setTextColor}
+                  activeText={activeText}
+                  canvas={canvas}
+                  fonts={fonts}
+                />
+              </div>
+
+              <div className="pt-6 border-t border-gray-100">
+                <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+                  <Image className="h-5 w-5" />
+                  Images Téléchargées
+                </h2>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Ajouter du Texte</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        placeholder="Tapez votre texte..."
-                        className="flex-1"
-                      />
-                    </div>
-
-                    <div className="space-y-2 mt-4">
-                      <Label className="text-sm font-medium">Police de Caractères</Label>
-                      <Select value={selectedFont} onValueChange={handleFontChange}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Choisir une police" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fonts.map((font) => (
-                            <SelectItem 
-                              key={font.value} 
-                              value={font.value}
-                              style={{ fontFamily: font.value }}
-                            >
-                              {font.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2 mt-4">
-                      <Label className="text-sm font-medium">Couleur du Texte</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="color"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="w-16 h-10 p-1"
-                        />
-                        <Button onClick={updateActiveTextColor} variant="outline" className="flex-1">
-                          Appliquer la Couleur
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 mt-4">
-                      <Label className="text-sm font-medium">Taille du Texte</Label>
-                      <div className="flex gap-2">
-                        <Button onClick={() => adjustTextSize(false)} size="icon" variant="outline">
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={() => adjustTextSize(true)} size="icon" variant="outline">
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Ajouter une Image</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      <Button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full"
-                        variant="secondary"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Télécharger une Image
-                      </Button>
-                    </div>
-                  </div>
+                  <ImageUploader
+                    canvas={canvas}
+                    onImageUpload={(image) => {
+                      setUploadedImages(prev => [...prev, image]);
+                      toast.success("Image ajoutée avec succès !");
+                    }}
+                  />
+                  <UploadedImagesList 
+                    images={uploadedImages}
+                    canvas={canvas}
+                    onImageClick={(image) => {
+                      if (!canvas) return;
+                      const obj = canvas.getObjects().find(
+                        obj => obj.type === 'image' && (obj as any)._element?.src === image.url
+                      );
+                      if (obj) {
+                        canvas.setActiveObject(obj);
+                        canvas.renderAll();
+                      }
+                    }}
+                    onOpacityChange={(image, opacity) => {
+                      if (!canvas) return;
+                      const obj = canvas.getObjects().find(
+                        obj => obj.type === 'image' && (obj as any)._element?.src === image.url
+                      );
+                      if (obj) {
+                        obj.set('opacity', opacity);
+                        canvas.renderAll();
+                      }
+                    }}
+                    onDeleteImage={handleDeleteImage}
+                  />
                 </div>
               </div>
-            </Card>
-
-            <Card className="p-6 space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Move className="h-5 w-5" />
-                Actions
-              </h2>
-              <div className="space-y-3">
-                <Button 
-                  variant="default" 
-                  className="w-full"
-                  onClick={handleDownload}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Télécharger le Design
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Sauvegarder le Projet
-                </Button>
-              </div>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-6">
-            <Card className="p-6">
-              <div className="aspect-[5/6] w-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
-                <canvas ref={canvasRef} className="max-w-full shadow-lg touch-manipulation" />
-              </div>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-3">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
-                <Image className="h-5 w-5" />
-                Images Téléchargées
-              </h2>
-              <ScrollArea className="h-[600px] pr-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {uploadedImages.map((img) => (
-                    <div 
-                      key={img.id}
-                      className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200"
-                    >
-                      <img 
-                        src={img.url} 
-                        alt={img.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Button size="icon" variant="destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="secondary">
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
             </Card>
           </div>
         </div>
