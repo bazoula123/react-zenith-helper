@@ -23,43 +23,48 @@ const ProductSelector = ({
   );
 
   return (
-    <Card className="p-4">
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Rechercher un produit..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 w-full"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <h3 className="font-medium text-sm text-gray-500">Catégories de produits</h3>
-          <div className="space-y-1">
-            {filteredCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => {
-                  onCategorySelect(category.id);
-                  toast.success(`Catégorie ${category.name} sélectionnée`);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  selectedCategory === category.id
-                    ? "bg-primary text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <category.icon className="h-5 w-5" />
-                <span>{category.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Rechercher un produit..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 w-full"
+        />
       </div>
-    </Card>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {filteredCategories.map((category) => (
+          <Card
+            key={category.id}
+            onClick={() => {
+              onCategorySelect(category.id);
+              toast.success(`Catégorie ${category.name} sélectionnée`);
+            }}
+            className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+              selectedCategory === category.id
+                ? "border-2 border-primary"
+                : "hover:border-primary/50"
+            }`}
+          >
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center gap-3">
+                <category.icon className="h-6 w-6 text-primary" />
+                <h3 className="font-medium">{category.name}</h3>
+              </div>
+              <p className="text-sm text-gray-600">
+                {category.description || "Personnalisez votre produit unique"}
+              </p>
+              <p className="text-sm font-medium text-primary">
+                À partir de {category.startingPrice || "30.00"} TND
+              </p>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 };
 
