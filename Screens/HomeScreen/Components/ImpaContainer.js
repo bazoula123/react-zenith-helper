@@ -2,8 +2,40 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { Typography } from '../../../common/typography';
+import { Colors, Shadows } from '../../../common/design';
+
 const ImpactContainer = () => {
   const { t } = useTranslation();
+
+  const impactCards = [
+    {
+      title: t('ImpaContainer.YourImpact'),
+      stats: [
+        { number: '2,450', label: t('ImpaContainer.MealsShared') },
+        { number: '127', label: t('ImpaContainer.LivesTouched') },
+        { number: '15', label: t('ImpaContainer.NGOsHelped') }
+      ]
+    },
+    {
+      title: t('ImpaContainer.Overall'),
+      stats: [
+        { number: '3,100', label: t('ImpaContainer.MealsShared') },
+        { number: '215', label: t('ImpaContainer.LivesTouched') },
+        { number: '20', label: t('ImpaContainer.NGOsHelped') }
+      ]
+    }
+  ];
+
+  const renderStatItem = (stat, index, totalStats) => (
+    <React.Fragment key={index}>
+      <View style={styles.statItem}>
+        <Text style={[Typography.h2, styles.statNumber]}>{stat.number}</Text>
+        <Text style={[Typography.bodySmall, styles.statLabel]}>{stat.label}</Text>
+      </View>
+      {index < totalStats - 1 && <View style={styles.statDivider} />}
+    </React.Fragment>
+  );
 
   return (
     <View style={styles.pageContainer}>
@@ -12,61 +44,23 @@ const ImpactContainer = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        <View style={styles.impactContainer}>
-          <LinearGradient
-            colors={['#893571', '#b8658f']}
-            style={styles.impactCard}
-          >
-            <Text style={styles.impactTitle}>{t('ImpaContainer.YourImpact')}</Text>
-            <View style={styles.impactStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>2,450</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.MealsShared')}</Text>
+        {impactCards.map((card, cardIndex) => (
+          <View key={cardIndex} style={styles.impactContainer}>
+            <LinearGradient
+              colors={[Colors.secondary, '#b8658f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.impactCard, Shadows.medium]}
+            >
+              <Text style={[Typography.h2, styles.impactTitle]}>{card.title}</Text>
+              <View style={styles.impactStats}>
+                {card.stats.map((stat, index) => 
+                  renderStatItem(stat, index, card.stats.length)
+                )}
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>127</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.LivesTouched')}</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>15</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.NGOsHelped')}</Text>
-              </View>
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* Second Impact Card */}
-        <View style={styles.impactContainer}>
-          <LinearGradient
-            colors={['#893571', '#b8658f']}
-            style={styles.impactCard}
-          >
-            <Text style={styles.impactTitle}>{t('ImpaContainer.Overall')}</Text>
-            <View style={styles.impactStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>3,100</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.MealsShared')}</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>215</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.LivesTouched')}</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>20</Text>
-                <Text style={styles.statLabel}>{t('ImpaContainer.NGOsHelped')}</Text>
-              </View>
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* Indicator for the next card */}
-        <View style={styles.arrowIndicator}>
-          <Text style={styles.arrowText}>→</Text>
-        </View>
+            </LinearGradient>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
@@ -74,62 +68,48 @@ const ImpactContainer = () => {
 
 const styles = StyleSheet.create({
   pageContainer: {
-    flex: 1,
-    paddingTop: 32,
+    marginTop: 24,
+    marginBottom: 16,
   },
   scrollContainer: {
     paddingHorizontal: 16,
-    flexDirection: 'row',
   },
   impactContainer: {
-    marginRight: 16, // space between cards
-    width: 300, // card width
+    marginRight: 16,
+    width: 320,
   },
   impactCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 24,
+    borderRadius: 16,
     elevation: 3,
   },
   impactTitle: {
-    fontSize: 22,
     color: '#FFF',
-    fontWeight: 'bold',
+    marginBottom: 20,
   },
   impactStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    alignItems: 'center',
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
     color: '#FFF',
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 14,
     color: '#FFF',
+    opacity: 0.9,
+    textAlign: 'center',
   },
   statDivider: {
-    height: 24,
-    borderLeftWidth: 1,
-    borderColor: '#FFF',
-  },
-  arrowIndicator: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-    position: 'absolute',
-    top: '50%',
-    right: 16,
-  },
-  arrowText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#b8658f',
-    transform: [{ rotate: '90deg' }],
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: 8,
   },
 });
 
