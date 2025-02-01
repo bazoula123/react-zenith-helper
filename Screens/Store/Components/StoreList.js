@@ -1,20 +1,33 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const StoreList = ({ stores }) => {
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.storeContainer}>
-      <Image source={{ uri: item.image }} style={styles.storeImage} />
-      <View style={styles.storeInfo}>
-        <Text style={styles.storeName}>{item.name}</Text>
-        <Text style={styles.storeDescription} numberOfLines={2}>
+    <TouchableOpacity style={styles.articleContainer}>
+      <Image source={{ uri: item.image }} style={styles.articleImage} />
+      <View style={styles.contentContainer}>
+        <View style={styles.categoryBadge}>
+          <Text style={styles.categoryText}>{item.category}</Text>
+        </View>
+        <Text style={styles.articleTitle}>{item.name}</Text>
+        <Text style={styles.articleDescription} numberOfLines={3}>
           {item.description}
         </Text>
-        <View style={styles.ratingContainer}>
-          <MaterialIcons name="star" size={16} color="#FFD700" />
-          <Text style={styles.rating}>{item.rating}</Text>
-          <Text style={styles.reviews}>({item.reviews} reviews)</Text>
+        <View style={styles.metaContainer}>
+          <View style={styles.authorContainer}>
+            <MaterialIcons name="person" size={16} color="#666" />
+            <Text style={styles.metaText}>{item.author}</Text>
+          </View>
+          <View style={styles.dateContainer}>
+            <MaterialIcons name="calendar-today" size={16} color="#666" />
+            <Text style={styles.metaText}>{new Date(item.date).toLocaleDateString()}</Text>
+          </View>
+          <View style={styles.ratingContainer}>
+            <MaterialIcons name="star" size={16} color="#FFD700" />
+            <Text style={styles.metaText}>{item.rating} ({item.reviews})</Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -34,50 +47,73 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
   },
-  storeContainer: {
-    flexDirection: 'row',
+  articleContainer: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: 'hidden',
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
   },
-  storeImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
+  articleImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
   },
-  storeInfo: {
-    flex: 1,
-    marginLeft: 12,
+  contentContainer: {
+    padding: 16,
   },
-  storeName: {
-    fontSize: 16,
+  categoryBadge: {
+    backgroundColor: '#893571',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  categoryText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  articleTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  storeDescription: {
+  articleDescription: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 8,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  metaContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 12,
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  rating: {
+  metaText: {
     marginLeft: 4,
-    fontSize: 14,
-    color: '#333',
-  },
-  reviews: {
-    marginLeft: 4,
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
   },
 });
