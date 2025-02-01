@@ -1,43 +1,51 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StatusBar, Platform, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Platform, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Colors } from '../../../common/design';
 
 const OrderHeader = ({ navigation, title }) => {
   return (
-    <>
-      <StatusBar translucent backgroundColor="transparent" />
+    <View style={styles.header}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Icon name="arrow-back" size={24} color={Colors.secondary} />
+        <Icon name="arrow-back" size={24} color="#7792bd" />
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
-    </>
+      <View style={styles.placeholder} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight + 10,
-    left: 20,
-    zIndex: 1,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight + 10,
+    paddingBottom: 10,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  backButton: {
     padding: 8,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 8,
+    backgroundColor: 'rgba(119, 146, 189, 0.1)',
   },
   title: {
-    fontSize: Platform.OS === 'ios' ? 28 : 24,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: 20,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  placeholder: {
+    width: 40,
   },
 });
 
