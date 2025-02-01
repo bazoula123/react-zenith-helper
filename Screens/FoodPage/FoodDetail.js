@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-
 import ImageCarousel from './components/ImageCarousel';
 import FoodContent from './components/FoodContent';
 import { fetchFoodDetails } from './services/foodService';
@@ -21,12 +20,10 @@ const FoodDetail = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { foodId } = route.params;
-
-  const scrollX = useRef(new Animated.Value(0)).current; // ✅ Fixed: Initialize Animated.Value
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const abortController = new AbortController();
-
     const loadFoodDetails = async () => {
       try {
         const data = await fetchFoodDetails(foodId, abortController.signal);
@@ -39,18 +36,14 @@ const FoodDetail = ({ navigation, route }) => {
         }
       }
     };
-
     loadFoodDetails();
-
-    return () => {
-      abortController.abort();
-    };
+    return () => abortController.abort();
   }, [foodId]);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#893571" />
+        <ActivityIndicator size="large" color="#7792bd" />
         <Text style={styles.loadingText}>Loading food details...</Text>
       </View>
     );
@@ -71,48 +64,29 @@ const FoodDetail = ({ navigation, route }) => {
     );
   }
 
-  if (!foodData) {
-    return (
-      <View style={styles.errorContainer}>
-        <Icon name="information-circle-outline" size={48} color="#893571" />
-        <Text style={styles.errorText}>No food information available</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.retryButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const handleRequestFood = () => {
-    navigation.navigate('OrderFood', { foodData });
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" />
-      <ImageCarousel images={foodData.images} scrollX={scrollX} /> {/* ✅ Fixed: Pass scrollX */}
-
-      <LinearGradient
-        colors={['rgba(0,0,0,0.5)', 'transparent']}
-        style={styles.headerGradient}
-      >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-      </LinearGradient>
-
+      
       <ScrollView 
         style={styles.contentContainer} 
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <FoodContent foodData={foodData} onRequestFood={handleRequestFood} />
+        <ImageCarousel images={foodData.images} scrollX={scrollX} />
+        <LinearGradient
+          colors={['rgba(0,0,0,0.4)', 'transparent']}
+          style={styles.headerGradient}
+        >
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+        </LinearGradient>
+        
+        <FoodContent foodData={foodData} />
       </ScrollView>
     </View>
   );
@@ -131,6 +105,18 @@ const styles = StyleSheet.create({
     height: 100,
     zIndex: 1,
   },
+  backButton: {
+    position: 'absolute',
+    top: StatusBar.currentHeight + 10,
+    left: 20,
+    backgroundColor: 'rgba(119, 146, 189, 0.3)',
+    padding: 12,
+    borderRadius: 25,
+    elevation: 2,
+  },
+  contentContainer: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -141,7 +127,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
-    fontFamily: 'System',
   },
   errorContainer: {
     flex: 1,
@@ -155,37 +140,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    fontFamily: 'System',
   },
   retryButton: {
     marginTop: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#893571',
+    backgroundColor: '#7792bd',
     borderRadius: 25,
-    elevation: 3,
   },
   retryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'System',
-  },
-  backButton: {
-    position: 'absolute',
-    top: StatusBar.currentHeight + 10,
-    left: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    padding: 12,
-    borderRadius: 25,
-    elevation: 2,
-  },
-  contentContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    marginTop: -30,
   },
 });
 

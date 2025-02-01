@@ -1,156 +1,218 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import FoodHeader from './FoodHeader';
-import QuickInfo from './QuickInfo';
-import LocationInfo from './LocationInfo';
-import AllergyWarning from './AllergyWarning';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const FoodContent = ({ foodData, onRequestFood }) => {
-  const scrollY = useRef(new Animated.Value(0)).current;
-
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0.3],
-    extrapolate: 'clamp',
-  });
-
+const FoodContent = ({ foodData }) => {
   return (
-    <Animated.ScrollView 
-      style={styles.contentWrapper}
-      showsVerticalScrollIndicator={false}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true }
-      )}
-    >
-      <Animated.View style={[styles.headerSection, { opacity: headerOpacity }]}>
-        <FoodHeader 
-          title={foodData.title}
-          hallal={foodData.hallal}
-          foodtype={foodData.foodtype}
-          expiryDate={foodData.expiryDate}
-        />
+    <View style={styles.container}>
+      <View style={styles.headerSection}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{foodData.name_food}</Text>
+          <View style={styles.typeContainer}>
+            <Text style={styles.typeText}>{foodData.type_food}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Icon name="time-outline" size={20} color="#7792bd" />
+            <Text style={styles.statText}>
+              {foodData.availability.time_availability}
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Icon name="star-outline" size={20} color="#7792bd" />
+            <Text style={styles.statText}>4.6</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Icon name="location-outline" size={20} color="#7792bd" />
+            <Text style={styles.statText}>{foodData.availability.country_availability}</Text>
+          </View>
+        </View>
+      </View>
 
-        <QuickInfo 
-          quantity={foodData.actualquantity_food}
-          quantityType={foodData.quantitytype_food}
-          isFrozen={foodData.isfrozen}
-        />
-      </Animated.View>
+      <View style={styles.descriptionSection}>
+        <Text style={styles.sectionTitle}>Description</Text>
+        <Text style={styles.descriptionText}>
+          {foodData.description_food}
+        </Text>
+      </View>
 
-      <AllergyWarning allergens={foodData.allergens} />
-
-      {foodData.hygienneDeclaration === 'Declared' && (
-        <View style={styles.hygieneSection}>
-          <Icon name="checkmark-circle" size={24} color="#059669" />
-          <Text style={styles.hygieneText}>
-            The donor has declared that this food was prepared under hygienic conditions
+      <View style={styles.infoSection}>
+        <View style={styles.infoRow}>
+          <Icon name="restaurant-outline" size={24} color="#7792bd" />
+          <Text style={styles.infoText}>
+            {foodData.quantity_food} {foodData.quantitytype_food} available
           </Text>
         </View>
-      )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About this food</Text>
-        <Text style={styles.description}>{foodData.description}</Text>
+        {foodData.hallal_food === 1 && (
+          <View style={styles.infoRow}>
+            <Icon name="checkmark-circle-outline" size={24} color="#4CAF50" />
+            <Text style={styles.infoText}>Halal Certified</Text>
+          </View>
+        )}
+        {foodData.allergens_food === "true" && (
+          <View style={styles.infoRow}>
+            <Icon name="warning-outline" size={24} color="#FF9800" />
+            <Text style={styles.infoText}>Contains Allergens</Text>
+          </View>
+        )}
       </View>
 
-      <LocationInfo location={foodData.location} />
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Additional Notes</Text>
-        <Text style={styles.description}>{foodData.additionalnote}</Text>
+      <View style={styles.locationSection}>
+        <Text style={styles.sectionTitle}>Pickup Location</Text>
+        <View style={styles.locationCard}>
+          <Icon name="location" size={24} color="#7792bd" />
+          <View style={styles.locationDetails}>
+            <Text style={styles.locationText}>
+              {foodData.availability.adresse_availability}
+            </Text>
+            <Text style={styles.locationSubtext}>
+              {foodData.availability.postalcode_availability}, {foodData.availability.country_availability}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.actionButton, 
-            { opacity: foodData.status === 'Available' ? 1 : 0.6 }
-          ]}
-          disabled={foodData.status !== 'Available'}
-          onPress={onRequestFood}
+      <TouchableOpacity style={styles.requestButton}>
+        <LinearGradient
+          colors={['#7792bd', '#5c7cb3']}
+          style={styles.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
         >
-          <Text style={styles.actionButtonText}>
-            {foodData.status === 'Available' ? 'Request Food' : 'Currently Reserved'}
-          </Text>
-          <Icon 
-            name={foodData.status === 'Available' ? 'arrow-forward-outline' : 'lock-closed-outline'} 
-            size={24} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-      </View>
-    </Animated.ScrollView>
+          <Text style={styles.buttonText}>Request Food</Text>
+          <Icon name="arrow-forward" size={24} color="#FFF" />
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  contentWrapper: {
+  container: {
     flex: 1,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -30,
+    paddingHorizontal: 20,
+    paddingTop: 30,
   },
   headerSection: {
-    padding: 20,
+    marginBottom: 24,
   },
-  section: {
-    marginBottom: 25,
-    backgroundColor: '#F8F9FA',
-    padding: 15,
-    borderRadius: 15,
-    elevation: 1,
-    marginHorizontal: 20,
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  hygieneSection: {
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000',
+    flex: 1,
+  },
+  typeContainer: {
+    backgroundColor: '#7792bd20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  typeText: {
+    color: '#7792bd',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    marginTop: 16,
+    justifyContent: 'space-between',
+  },
+  statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    padding: 15,
-    borderRadius: 12,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
-  hygieneText: {
-    marginLeft: 10,
-    color: '#065F46',
+  statText: {
+    marginLeft: 4,
+    color: '#666',
     fontSize: 14,
-    flex: 1,
-    fontFamily: 'System',
+  },
+  descriptionSection: {
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000',
     marginBottom: 12,
-    fontFamily: 'System',
   },
-  description: {
-    fontSize: 15,
-    lineHeight: 24,
+  descriptionText: {
+    fontSize: 16,
     color: '#666',
-    fontFamily: 'System',
+    lineHeight: 24,
   },
-  bottomContainer: {
-    marginTop: 20,
-    marginBottom: 30,
-    paddingHorizontal: 20,
-  },
-  actionButton: {
-    backgroundColor: '#893571',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+  infoSection: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 30,
-    elevation: 4,
+    marginBottom: 24,
   },
-  actionButtonText: {
-    color: '#fff',
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#444',
+  },
+  locationSection: {
+    marginBottom: 24,
+  },
+  locationCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'flex-start',
+  },
+  locationDetails: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  locationText: {
+    fontSize: 16,
+    color: '#000',
+    marginBottom: 4,
+  },
+  locationSubtext: {
+    fontSize: 14,
+    color: '#666',
+  },
+  requestButton: {
+    marginVertical: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#7792bd',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  gradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  buttonText: {
+    color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 8,
-    fontFamily: 'System',
   },
 });
 

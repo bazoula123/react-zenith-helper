@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 
 const ImageCarousel = ({ images, scrollX }) => {
   return (
-    <View style={styles.imageCarousel}>
+    <View style={styles.container}>
       <ScrollView
         horizontal
         pagingEnabled
@@ -18,31 +18,50 @@ const ImageCarousel = ({ images, scrollX }) => {
         scrollEventThrottle={16}
       >
         {images.map((image, index) => (
-          <View key={index} style={styles.imageContainer}>
-            <ImageBackground source={{ uri: image }} style={styles.foodImage}>
+          <View key={index} style={styles.slide}>
+            <ImageBackground 
+              source={{ uri: image }} 
+              style={styles.image}
+              resizeMode="cover"
+            >
               <LinearGradient
-                colors={['rgba(0,0,0,0.6)', 'transparent', 'rgba(0,0,0,0.7)']}
-                style={styles.gradient}
+                colors={['transparent', 'rgba(0,0,0,0.3)']}
+                style={StyleSheet.absoluteFill}
               />
             </ImageBackground>
           </View>
         ))}
       </ScrollView>
 
-      <View style={styles.indicatorContainer}>
+      <View style={styles.pagination}>
         {images.map((_, index) => {
-          const indicatorWidth = scrollX.interpolate({
-            inputRange: [(index - 1) * width, index * width, (index + 1) * width],
+          const inputRange = [
+            (index - 1) * width,
+            index * width,
+            (index + 1) * width,
+          ];
+
+          const dotWidth = scrollX.interpolate({
+            inputRange,
             outputRange: [8, 24, 8],
             extrapolate: 'clamp',
           });
+
           const opacity = scrollX.interpolate({
-            inputRange: [(index - 1) * width, index * width, (index + 1) * width],
+            inputRange,
             outputRange: [0.4, 1, 0.4],
             extrapolate: 'clamp',
           });
 
-          return <Animated.View key={index} style={[styles.indicator, { width: indicatorWidth, opacity }]} />;
+          return (
+            <Animated.View
+              key={index}
+              style={[
+                styles.dot,
+                { width: dotWidth, opacity },
+              ]}
+            />
+          );
         })}
       </View>
     </View>
@@ -50,29 +69,25 @@ const ImageCarousel = ({ images, scrollX }) => {
 };
 
 const styles = StyleSheet.create({
-  imageCarousel: {
+  container: {
     height: height * 0.45,
   },
-  imageContainer: {
-    width: width,
+  slide: {
+    width,
     height: height * 0.45,
-    overflow: 'hidden',
   },
-  foodImage: {
+  image: {
+    flex: 1,
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  indicatorContainer: {
+  pagination: {
     flexDirection: 'row',
     position: 'absolute',
     bottom: 20,
     alignSelf: 'center',
   },
-  indicator: {
+  dot: {
     height: 8,
     borderRadius: 4,
     backgroundColor: '#fff',
