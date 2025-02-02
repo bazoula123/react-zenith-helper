@@ -55,6 +55,7 @@ const PromoContainer = () => {
               source={{ uri: promo.image }}
               style={styles.promoCard}
               imageStyle={styles.backgroundImage}
+              resizeMode="cover"
             >
               <View style={styles.overlay} />
               <View style={styles.contentContainer}>
@@ -86,14 +87,14 @@ const PromoContainer = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
+    height: 240, // Increased from 200 to 240 for better visibility
     marginVertical: 16,
   },
   scrollView: {
     flex: 1,
   },
   slide: {
-    width: width - 32,
+    width: width - 32, // Maintaining 16px padding on each side
     marginHorizontal: 16,
   },
   promoCard: {
@@ -101,9 +102,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     justifyContent: 'flex-end',
+    height: 200, // Explicit height for the promo card
   },
   backgroundImage: {
     borderRadius: 16,
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
