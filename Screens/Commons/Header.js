@@ -13,7 +13,7 @@ const Header = () => {
   const navigation = useNavigation();
 
   const navigateToNotifications = () => {
-    navigation.navigate(t('Header.notification_screen'));
+    navigation.navigate('NotificationScreen');
   };
 
   return (
@@ -34,7 +34,7 @@ const Header = () => {
             </Surface>
             <View style={styles.greetingContainer}>
               <Text style={styles.greeting}>{t('Header.good_morning')}</Text>
-              <Text style={styles.username}>user.name</Text>
+              <Text style={styles.username}>Iheb Chebbi</Text>
             </View>
           </View>
           

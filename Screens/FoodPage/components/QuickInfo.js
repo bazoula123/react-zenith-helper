@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const QuickInfo = ({ quantity, quantityType, isFrozen }) => {
+const QuickInfo = ({ quantity, quantityType, allergens, isFrozen }) => {
   return (
     <View style={styles.quickInfoContainer}>
       <View style={styles.infoCard}>
@@ -10,7 +10,11 @@ const QuickInfo = ({ quantity, quantityType, isFrozen }) => {
         <Text style={styles.infoLabel}>{quantity} {quantityType}</Text>
       </View>
       <View style={styles.infoCard}>
-        <Icon name="thermometer-outline" size={24} color="#893571" />
+        <Icon name="warning-outline" size={24} color="#893571" />
+        <Text style={styles.infoLabel}>{allergens.join(', ')}</Text>
+      </View>
+      <View style={styles.infoCard}>
+        <Icon name="checkmark-circle-outline" size={24} color="#893571" />
         <Text style={styles.infoLabel}>{isFrozen}</Text>
       </View>
     </View>
@@ -20,7 +24,7 @@ const QuickInfo = ({ quantity, quantityType, isFrozen }) => {
 const styles = StyleSheet.create({
   quickInfoContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginVertical: 20,
   },
   infoCard: {
@@ -40,7 +44,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 12,
     marginTop: 8,
-    textAlign: 'center',
   },
 });
 

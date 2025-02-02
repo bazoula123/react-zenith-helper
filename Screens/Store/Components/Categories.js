@@ -3,12 +3,12 @@ import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 const categories = [
   'All',
-  'Electronics',
-  'Fashion',
-  'Home',
-  'Books',
-  'Sports',
+  'Crafts',
   'Beauty',
+  'Clothing',
+  'Home Decor',
+  'Food',
+  'Art',
 ];
 
 const Categories = ({ selectedCategory, onSelectCategory }) => {
@@ -43,26 +43,30 @@ const Categories = ({ selectedCategory, onSelectCategory }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 13,
+    marginRight: 12,
     borderRadius: 20,
-    backgroundColor: '#EFEFEF',
+    backgroundColor: '#F6F6F7',
   },
   selectedCategory: {
-    backgroundColor: '#893571',
+    backgroundColor: '#b8658f',
   },
   categoryText: {
     color: '#666',
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '500',
   },
   selectedCategoryText: {
     color: '#fff',
+    fontWeight: '600',
   },
 });
 

@@ -3,10 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Text, Platform, Dimensions } from '
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -23,84 +20,76 @@ const FooterNavigator = () => {
   const TabButton = ({ label, icon, screen, isCenter = false }) => {
     const isActive = activeTab === screen;
 
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [
-          {
-            scale: withSpring(isActive ? 1.2 : 1),
-          },
-        ],
-      };
-    });
-
     return (
       <TouchableOpacity
-        style={[
-          styles.tabButton,
-          isActive && styles.activeTabButton,
-          isCenter && styles.centerButton,
-        ]}
+        style={[styles.tabButton, isCenter && styles.centerButton]}
         onPress={() => {
           setActiveTab(screen);
           navigation.navigate(screen);
         }}
       >
-        <Animated.View style={[styles.iconContainer, animatedStyle]}>
+        <View style={[styles.iconContainer, isActive && !isCenter && styles.activeIconContainer]}>
           {isCenter ? (
-            <View style={styles.centerButtonInner}>
-              <Icon name={icon} size={30} color="white" />
-            </View>
+            <LinearGradient
+              colors={['#893571', '#b8658f']}
+              style={styles.centerButtonInner}
+            >
+              <Icon name={icon} size={28} color="white" />
+            </LinearGradient>
           ) : (
             <>
               <Icon
                 name={icon}
                 size={24}
                 color={isActive ? '#893571' : '#8E8E93'}
+                style={styles.icon}
               />
               <Text style={[styles.tabLabel, isActive && styles.activeTabLabel]}>
                 {label}
               </Text>
             </>
           )}
-        </Animated.View>
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.footerContainer}>
-        <TabButton
-          label={t('Footer.Home')}
-          icon="home-outline"
-          screen="HomeScreen"
+      <LinearGradient
+        colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,1)']}
+        style={styles.footerContainer}
+      >
+        <TabButton 
+          label={t('Footer.Home')} 
+          icon="home" 
+          screen="HomeScreen" 
         />
-        <TabButton
-          label={t('Footer.Community')}
-          icon="people-outline"
-          screen="CommunityScreen"
+        <TabButton 
+          label={t('Footer.Community')} 
+          icon="people" 
+          screen="CommunityScreen" 
         />
-        <TabButton
-          label=""
-          icon="map-outline"
-          screen="MapScreen"
-          isCenter={true}
+        <TabButton 
+          label="" 
+          icon="map" 
+          screen="MapScreen" 
+          isCenter={true} 
         />
-        <TabButton
-          label={t('Footer.Store')}
-          icon="storefront"
-          screen="StoreScreen"
+        <TabButton 
+          label={t('Footer.Stats')} 
+          icon="stats-chart-outline" 
+          screen="StatsScreen" 
         />
-        <TabButton
-          label={t('Footer.Profile')}
-          icon="person-outline"
-          screen="SettingsScreen"
+        <TabButton 
+          label={t('Footer.Profile')} 
+          icon="person" 
+          screen="SettingsScreen" 
         />
-      </View>
+      </LinearGradient>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -116,10 +105,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
@@ -132,26 +118,18 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     position: 'relative',
   },
-  activeTabButton: {
-    backgroundColor: 'transparent',
-  },
   centerButton: {
     justifyContent: 'flex-start',
     marginTop: -18,
-    
   },
   centerButtonInner: {
-    backgroundColor: '#893571',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#893571',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
@@ -159,10 +137,17 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 8,
+    borderRadius: 20,
+  },
+  activeIconContainer: {
+    backgroundColor: 'rgba(137, 53, 113, 0.1)',
+  },
+  icon: {
+    marginBottom: 4,
   },
   tabLabel: {
     fontSize: 12,
-    marginTop: 4,
     color: '#8E8E93',
     fontWeight: '500',
   },

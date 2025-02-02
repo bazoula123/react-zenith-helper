@@ -1,40 +1,51 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, SafeAreaView } from 'react-native';
 import Header from '../Commons/Header';
 import FooterNavigator from '../FooterNavigator/FooterNavigator';
-import SearchBar from './Components/SearchBar';
 import Categories from './Components/Categories';
 import StoreList from './Components/StoreList';
+import SearchBar from './Components/SearchBar';
 
 const mockStores = [
   {
     id: '1',
-    name: 'Electronics Hub',
-    description: 'Latest gadgets and electronics at great prices',
+    name: 'Handmade Jewelry',
+    description: 'Beautiful handcrafted jewelry made with love. Each piece is unique and tells its own story. Perfect for gifts or treating yourself to something special.',
     image: 'https://picsum.photos/200',
-    rating: 4.5,
-    reviews: 128,
-    category: 'Electronics',
+    price: 45.99,
+    category: 'Crafts',
+    seller: 'Sarah\'s Crafts',
+    rating: 4.8,
+    reviews: 156,
+    location: 'San Francisco, CA',
+    isAvailable: true
   },
   {
     id: '2',
-    name: 'Fashion Store',
-    description: 'Trendy fashion items for all seasons',
+    name: 'Organic Soap Set',
+    description: 'Natural, handmade soaps using organic ingredients. These gentle cleansers are perfect for sensitive skin and come in various refreshing scents.',
     image: 'https://picsum.photos/201',
-    rating: 4.3,
-    reviews: 95,
-    category: 'Fashion',
+    price: 24.99,
+    category: 'Beauty',
+    seller: 'Natural Care Co.',
+    rating: 4.6,
+    reviews: 89,
+    location: 'Portland, OR',
+    isAvailable: true
   },
   {
     id: '3',
-    name: 'Home Decor',
-    description: 'Beautiful home decoration items',
+    name: 'Knitted Winter Set',
+    description: 'Cozy handknitted winter accessories including a scarf, hat, and mittens. Made with premium wool for maximum warmth and comfort.',
     image: 'https://picsum.photos/202',
-    rating: 4.7,
-    reviews: 156,
-    category: 'Home',
-  },
+    price: 59.99,
+    category: 'Clothing',
+    seller: 'Warm & Woolly',
+    rating: 4.9,
+    reviews: 203,
+    location: 'Boston, MA',
+    isAvailable: true
+  }
 ];
 
 export default function StoreScreen() {
@@ -52,7 +63,6 @@ export default function StoreScreen() {
     <SafeAreaView style={styles.container}>
       <Header />
       <View style={styles.content}>
-        <SearchBar onSearch={setSearchQuery} />
         <Categories
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
@@ -67,7 +77,7 @@ export default function StoreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EDE7F6',
+    backgroundColor: '#F6F6F7',
   },
   content: {
     flex: 1,
