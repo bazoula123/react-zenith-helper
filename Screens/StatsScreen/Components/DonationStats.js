@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { PieChart, BarChart } from 'recharts';
+import { BarChart, PieChart, Pie, XAxis, YAxis, Bar } from 'recharts';
 
 const screenWidth = Dimensions.get('window').width;
 
