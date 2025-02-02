@@ -2,30 +2,45 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { BarChart, PieChart, Pie, XAxis, YAxis, Bar } from 'recharts';
+import { BarChart, PieChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function DonationStats() {
   const pieData = [
-    { name: 'Domestic', value: 95, fill: '#8884d8' },
-    { name: 'International', value: 95, fill: '#82ca9d' },
+    {
+      name: 'Domestic',
+      population: 95,
+      color: '#8884d8',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 12,
+    },
+    {
+      name: 'International',
+      population: 95,
+      color: '#82ca9d',
+      legendFontColor: '#7F7F7F',
+      legendFontSize: 12,
+    },
   ];
 
-  const monthlyData = [
-    { name: 'Jan', hours: 45 },
-    { name: 'Feb', hours: 52 },
-    { name: 'Mar', hours: 48 },
-    { name: 'Apr', hours: 70 },
-    { name: 'May', hours: 55 },
-    { name: 'Jun', hours: 58 },
-    { name: 'Jul', hours: 90 },
-    { name: 'Aug', hours: 80 },
-    { name: 'Sep', hours: 65 },
-    { name: 'Oct', hours: 75 },
-    { name: 'Nov', hours: 85 },
-    { name: 'Dec', hours: 82 },
-  ];
+  const monthlyData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        data: [45, 52, 48, 70, 55, 58],
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    color: (opacity = 1) => `rgba(137, 53, 113, ${opacity})`,
+    strokeWidth: 2,
+    barPercentage: 0.5,
+    useShadowColorFromDataset: false,
+  };
 
   return (
     <View style={styles.container}>
@@ -56,31 +71,32 @@ export default function DonationStats() {
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Monthly Hours Distribution</Text>
         <BarChart
-          width={screenWidth - 40}
-          height={200}
           data={monthlyData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Bar dataKey="hours" fill="#893571" />
-        </BarChart>
+          width={screenWidth - 40}
+          height={220}
+          chartConfig={chartConfig}
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
       </View>
 
       <View style={styles.pieContainer}>
         <Text style={styles.chartTitle}>Flight Distribution</Text>
-        <PieChart width={screenWidth - 40} height={200}>
-          <Pie
-            data={pieData}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={80}
-            paddingAngle={5}
-            dataKey="value"
-            label
-          />
-        </PieChart>
+        <PieChart
+          data={pieData}
+          width={screenWidth - 40}
+          height={220}
+          chartConfig={chartConfig}
+          accessor="population"
+          backgroundColor="transparent"
+          paddingLeft="15"
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+        />
       </View>
     </View>
   );
