@@ -40,11 +40,11 @@ export default function ImpactMetrics() {
                 progress={metric.progress}
                 progressColor={metric.color}
                 backgroundColor="#f0f0f0"
-                strokeWidth={10}
+                strokeWidth={8}
               />
               <Icon 
                 name={metric.icon} 
-                size={24} 
+                size={20} 
                 color={metric.color}
                 style={styles.iconOverlay}
               />
@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -80,38 +82,37 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     alignItems: 'center',
-    marginBottom: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    flex: 1,
+    paddingHorizontal: 8,
   },
   progressContainer: {
-    width: 100,
-    height: 100,
+    width: 70,
+    height: 70,
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   progressCircle: {
-    height: 100,
+    height: 70,
   },
   iconOverlay: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: [
-      { translateX: -12 },
-      { translateY: -12 }
+      { translateX: -10 },
+      { translateY: -10 }
     ],
   },
   metricValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginTop: 8,
+    marginTop: 4,
   },
   metricLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
-    marginTop: 4,
+    marginTop: 2,
+    textAlign: 'center',
   },
 });
