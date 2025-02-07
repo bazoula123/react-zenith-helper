@@ -7,8 +7,7 @@ import {
   TouchableOpacity, 
   Dimensions, 
   Animated,
-  Image,
-  ActivityIndicator
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '../../common/design';
@@ -87,8 +86,7 @@ const generateRandomPosition = () => ({
 export default function StartScreen({ navigation }) {
   const [activeStep, setActiveStep] = useState(0);
   const [positions, setPositions] = useState(foodItems.map(() => generateRandomPosition()));
-  const [isLoading, setIsLoading] = useState(true);
-  const [dotCount, setDotCount] = useState(1);
+  const [showStartScreen, setShowStartScreen] = useState(false);
   const { user, isLoaded: clerkLoaded } = useUser();
   const animatedValues = useRef(foodItems.map(() => ({
     scale: new Animated.Value(0),
@@ -97,26 +95,15 @@ export default function StartScreen({ navigation }) {
   }))).current;
 
   useEffect(() => {
-    const dotAnimation = setInterval(() => {
-      setDotCount(prevCount => (prevCount % 3) + 1);
-    }, 500);
-
-    return () => clearInterval(dotAnimation);
-  }, []);
-
-  useEffect(() => {
     const checkAuth = async () => {
       try {
         const normalUserData = await AsyncStorage.getItem('userDataNorma');
         
         if (normalUserData) {
           console.log('Normal auth user found:', normalUserData);
-          setTimeout(() => {
-            if (RootNavigation.navigationRef.isReady()) {
-              RootNavigation.navigate('HomeScreen');
-            }
-            setIsLoading(false);
-          }, 1000);
+          if (RootNavigation.navigationRef.isReady()) {
+            RootNavigation.navigate('HomeScreen');
+          }
           return;
         }
 
@@ -134,22 +121,19 @@ export default function StartScreen({ navigation }) {
           const result = await response.json();
           console.log('Clerk user check result:', result);
           
-          setTimeout(() => {
-            if (RootNavigation.navigationRef.isReady()) {
-              if (result.exists) {
-                RootNavigation.navigate('HomeScreen');
-              } else {
-                RootNavigation.navigate('SignUpGmail');
-              }
+          if (RootNavigation.navigationRef.isReady()) {
+            if (result.exists) {
+              RootNavigation.navigate('HomeScreen');
+            } else {
+              RootNavigation.navigate('SignUpGmail');
             }
-            setIsLoading(false);
-          }, 1000);
+          }
         } else if (clerkLoaded && !user) {
-          setIsLoading(false);
+          setShowStartScreen(true);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        setIsLoading(false);
+        setShowStartScreen(true);
       }
     };
 
@@ -258,6 +242,10 @@ export default function StartScreen({ navigation }) {
     );
   };
 
+  if (!showStartScreen) {
+    return null;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -268,45 +256,34 @@ export default function StartScreen({ navigation }) {
           <Text style={styles.logoText}>FOODECA</Text>
         </View>
 
-        {isLoading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#893571" animating={isLoading} />
-            <Text style={styles.authText}>
-              Authenticating{'.'.repeat(dotCount)}
-            </Text>
+        <View style={styles.bubblesContainer}>
+          {renderFoodBubbles()}
+        </View>
+
+        <View style={styles.contentContainer}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{steps[activeStep].title}</Text>
+            <Text style={styles.description}>{steps[activeStep].description}</Text>
           </View>
-        ) : (
-          <>
-            <View style={styles.bubblesContainer}>
-              {renderFoodBubbles()}
-            </View>
+        </View>
 
-            <View style={styles.contentContainer}>
-              <View style={styles.titleContainer}>
-                <Text style={styles.title}>{steps[activeStep].title}</Text>
-                <Text style={styles.description}>{steps[activeStep].description}</Text>
-              </View>
-            </View>
-
-            <View style={styles.buttonContainer}>
-              {renderStepIndicator()}
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  if (activeStep < steps.length - 1) {
-                    animateBubbles(activeStep + 1);
-                  } else {
-                    navigation.navigate('Login');
-                  }
-                }}
-              >
-                <Text style={styles.buttonText}>
-                  {activeStep < steps.length - 1 ? 'Next' : 'Get started'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+        <View style={styles.buttonContainer}>
+          {renderStepIndicator()}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              if (activeStep < steps.length - 1) {
+                animateBubbles(activeStep + 1);
+              } else {
+                navigation.navigate('Login');
+              }
+            }}
+          >
+            <Text style={styles.buttonText}>
+              {activeStep < steps.length - 1 ? 'Next' : 'Get started'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
     </SafeAreaView>
   );
