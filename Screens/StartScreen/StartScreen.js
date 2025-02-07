@@ -77,7 +77,7 @@ const foodItems = [
 
 const generateRandomPosition = () => ({
   x: Math.random() * (SCREEN_WIDTH - SCREEN_WIDTH * 0.3),
-  y: Math.random() * SCREEN_HEIGHT * 0.7
+  y: Math.random() * (SCREEN_HEIGHT * 0.4)
 });
 
 export default function StartScreen({ navigation }) {
@@ -172,6 +172,25 @@ export default function StartScreen({ navigation }) {
     });
   };
 
+  const renderStepIndicator = () => {
+    return (
+      <View style={styles.stepIndicatorContainer}>
+        {steps.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.stepDot,
+              {
+                backgroundColor: index === activeStep ? Colors.primary : Colors.border,
+                width: index === activeStep ? 24 : 8,
+              }
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -195,6 +214,7 @@ export default function StartScreen({ navigation }) {
         </View>
 
         <View style={styles.buttonContainer}>
+          {renderStepIndicator()}
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
@@ -214,7 +234,6 @@ export default function StartScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -236,8 +255,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   bubblesContainer: {
-    flex: 1,
+    height: SCREEN_HEIGHT * 0.4,
     position: 'relative',
+    marginTop: Spacing.md,
+    zIndex: 1,
   },
   foodBubble: {
     position: 'absolute',
@@ -255,6 +276,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingVertical: Spacing.xl,
     alignItems: 'center',
+    zIndex: 2,
+    backgroundColor: 'transparent',
   },
   subtitle: {
     ...Typography.bodyMedium,
@@ -278,6 +301,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingBottom: Spacing.xl * 2,
+    zIndex: 2,
   },
   button: {
     backgroundColor: '#000000',
@@ -289,5 +313,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  stepIndicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  stepDot: {
+    height: 8,
+    borderRadius: BorderRadius.round,
+    marginHorizontal: 4,
+    transition: '0.3s',
   },
 });
