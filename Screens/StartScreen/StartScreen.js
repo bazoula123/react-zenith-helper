@@ -7,10 +7,14 @@ import {
   TouchableOpacity, 
   Dimensions, 
   Animated,
-  Image 
+  Image,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '../../common/design';
+import { useUser } from '@clerk/clerk-expo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as RootNavigation from '../../RootNavigation';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -83,11 +87,74 @@ const generateRandomPosition = () => ({
 export default function StartScreen({ navigation }) {
   const [activeStep, setActiveStep] = useState(0);
   const [positions, setPositions] = useState(foodItems.map(() => generateRandomPosition()));
+  const [isLoading, setIsLoading] = useState(true);
+  const [dotCount, setDotCount] = useState(1);
+  const { user, isLoaded: clerkLoaded } = useUser();
   const animatedValues = useRef(foodItems.map(() => ({
     scale: new Animated.Value(0),
     translateX: new Animated.Value(0),
     translateY: new Animated.Value(0)
   }))).current;
+
+  useEffect(() => {
+    const dotAnimation = setInterval(() => {
+      setDotCount(prevCount => (prevCount % 3) + 1);
+    }, 500);
+
+    return () => clearInterval(dotAnimation);
+  }, []);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const normalUserData = await AsyncStorage.getItem('userDataNorma');
+        
+        if (normalUserData) {
+          console.log('Normal auth user found:', normalUserData);
+          setTimeout(() => {
+            if (RootNavigation.navigationRef.isReady()) {
+              RootNavigation.navigate('HomeScreen');
+            }
+            setIsLoading(false);
+          }, 1000);
+          return;
+        }
+
+        if (clerkLoaded && user?.primaryEmailAddress?.emailAddress) {
+          const response = await fetch('http://192.168.1.81:5002/api/check-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              email_user: user.primaryEmailAddress.emailAddress 
+            }),
+          });
+
+          const result = await response.json();
+          console.log('Clerk user check result:', result);
+          
+          setTimeout(() => {
+            if (RootNavigation.navigationRef.isReady()) {
+              if (result.exists) {
+                RootNavigation.navigate('HomeScreen');
+              } else {
+                RootNavigation.navigate('SignUpGmail');
+              }
+            }
+            setIsLoading(false);
+          }, 1000);
+        } else if (clerkLoaded && !user) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [user, clerkLoaded]);
 
   useEffect(() => {
     animateBubbles(activeStep);
@@ -201,34 +268,45 @@ export default function StartScreen({ navigation }) {
           <Text style={styles.logoText}>FOODECA</Text>
         </View>
 
-        <View style={styles.bubblesContainer}>
-          {renderFoodBubbles()}
-        </View>
-
-        <View style={styles.contentContainer}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{steps[activeStep].title}</Text>
-            <Text style={styles.description}>{steps[activeStep].description}</Text>
-          </View>
-        </View>
-
-        <View style={styles.buttonContainer}>
-          {renderStepIndicator()}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              if (activeStep < steps.length - 1) {
-                animateBubbles(activeStep + 1);
-              } else {
-                navigation.navigate('Login');
-              }
-            }}
-          >
-            <Text style={styles.buttonText}>
-              {activeStep < steps.length - 1 ? 'Next' : 'Get started'}
+        {isLoading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#893571" animating={isLoading} />
+            <Text style={styles.authText}>
+              Authenticating{'.'.repeat(dotCount)}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        ) : (
+          <>
+            <View style={styles.bubblesContainer}>
+              {renderFoodBubbles()}
+            </View>
+
+            <View style={styles.contentContainer}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{steps[activeStep].title}</Text>
+                <Text style={styles.description}>{steps[activeStep].description}</Text>
+              </View>
+            </View>
+
+            <View style={styles.buttonContainer}>
+              {renderStepIndicator()}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  if (activeStep < steps.length - 1) {
+                    animateBubbles(activeStep + 1);
+                  } else {
+                    navigation.navigate('Login');
+                  }
+                }}
+              >
+                <Text style={styles.buttonText}>
+                  {activeStep < steps.length - 1 ? 'Next' : 'Get started'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </LinearGradient>
     </SafeAreaView>
   );
@@ -321,4 +399,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     transition: '0.3s',
   },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  authText: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#893571',
+  }
 });
