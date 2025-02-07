@@ -77,7 +77,7 @@ const foodItems = [
 
 const generateRandomPosition = () => ({
   x: Math.random() * (SCREEN_WIDTH - SCREEN_WIDTH * 0.3),
-  y: Math.random() * (SCREEN_HEIGHT * 0.4)
+  y: Math.random() * (SCREEN_HEIGHT * 0.25)
 });
 
 export default function StartScreen({ navigation }) {
@@ -206,7 +206,6 @@ export default function StartScreen({ navigation }) {
         </View>
 
         <View style={styles.contentContainer}>
-          <Text style={styles.subtitle}>Choose your preference</Text>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{steps[activeStep].title}</Text>
             <Text style={styles.description}>{steps[activeStep].description}</Text>
@@ -255,7 +254,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   bubblesContainer: {
-    height: SCREEN_HEIGHT * 0.4,
+    height: SCREEN_HEIGHT * 0.3,
     position: 'relative',
     marginTop: Spacing.md,
     zIndex: 1,
@@ -274,15 +273,11 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   contentContainer: {
-    paddingVertical: Spacing.xl,
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingBottom: Spacing.xl * 2,
     zIndex: 2,
     backgroundColor: 'transparent',
-  },
-  subtitle: {
-    ...Typography.bodyMedium,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
   },
   titleContainer: {
     alignItems: 'center',
