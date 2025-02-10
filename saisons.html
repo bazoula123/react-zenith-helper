@@ -118,7 +118,7 @@
 
         .pending-btn {
             background: linear-gradient(135deg, #555555, #333333);
-            color: white;
+            color: white !important;
             cursor: not-allowed;
             opacity: 0.9;
         }
@@ -247,6 +247,11 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
+            if (!localStorage.getItem("user")) {
+                window.location.href = "https://draminesaid.com/videos/";
+                return;
+            }
+
             const user = JSON.parse(localStorage.getItem("user"));
             if (!user || !user.id) {
                 console.error("User data or id_client not found in localStorage.");
