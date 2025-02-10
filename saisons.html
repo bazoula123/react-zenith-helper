@@ -84,8 +84,10 @@
         }
 
         .button-overlay a {
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             width: 100%;
             padding: 12px 24px;
             border-radius: 25px;
@@ -105,10 +107,18 @@
                        0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .about-btn i {
+            transition: transform 0.3s ease;
+        }
+
         .about-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(106, 137, 187, 0.5),
                        0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .about-btn:hover i {
+            transform: translateX(5px);
         }
 
         .buy-now-btn {
@@ -324,7 +334,7 @@
                         const aboutButton = document.createElement("a");
                         aboutButton.href = saison.about_link;
                         aboutButton.target = "_blank";
-                        aboutButton.innerText = "À propos de la formation";
+                        aboutButton.innerHTML = 'À propos de la formation <i class="bi bi-arrow-right"></i>';
                         aboutButton.classList.add("about-btn");
                         buttonContainer.appendChild(aboutButton);
 
