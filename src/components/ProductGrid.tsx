@@ -55,16 +55,16 @@ const ProductGrid = ({ onAddToCart, limit }: ProductGridProps) => {
             align: "start",
             loop: true,
           }}
-          className="w-full px-4"
+          className="w-full"
         >
-          <CarouselContent className="-ml-2 md:-ml-4">
+          <CarouselContent>
             {displayedProducts.map((product) => (
               <CarouselItem
                 key={product.id}
                 className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
               >
                 <div
-                  className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer h-[500px] flex flex-col"
+                  className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer h-[500px] flex flex-col mx-2"
                 >
                   <div className="h-[300px] overflow-hidden bg-gray-50 flex items-center justify-center relative">
                     <img
@@ -107,10 +107,8 @@ const ProductGrid = ({ onAddToCart, limit }: ProductGridProps) => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="hidden md:block">
-            <CarouselPrevious className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
-            <CarouselNext className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
-          </div>
+          <CarouselPrevious className="hidden md:flex absolute -left-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
+          <CarouselNext className="hidden md:flex absolute -right-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
         </Carousel>
       </div>
     </div>
