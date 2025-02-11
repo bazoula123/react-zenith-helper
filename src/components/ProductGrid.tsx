@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { products } from "@/config/products";
 import {
@@ -114,4 +114,3 @@ const ProductGrid = ({ onAddToCart, limit }: ProductGridProps) => {
 };
 
 export default ProductGrid;
-
