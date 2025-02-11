@@ -1,16 +1,15 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { products } from "@/config/products";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import Autoplay from "embla-carousel-autoplay";
-import useEmblaCarousel from 'embla-carousel-react';
 
 interface ProductGridProps {
   onAddToCart: () => void;
@@ -21,51 +20,6 @@ const ProductGrid = ({ onAddToCart, limit }: ProductGridProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-
-  // Initialize Embla with options
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
-    align: "start",
-    slidesToScroll: 1,
-    breakpoints: {
-      '(min-width: 768px)': { slidesToScroll: 3 }
-    }
-  }, [Autoplay({ delay: 4000, stopOnInteraction: true })]);
-
-  // Navigation functions
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) {
-      emblaApi.scrollPrev();
-      console.log('Scrolling prev');
-    }
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) {
-      emblaApi.scrollNext();
-      console.log('Scrolling next');
-    }
-  }, [emblaApi]);
-
-  // Track whether we can scroll
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const onSelect = () => {
-      setCanScrollPrev(emblaApi.canScrollPrev());
-      setCanScrollNext(emblaApi.canScrollNext());
-    };
-
-    emblaApi.on('select', onSelect);
-    onSelect();
-
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi]);
 
   const categories = ["all", ...new Set(products.map(product => product.name))];
   
@@ -96,68 +50,68 @@ const ProductGrid = ({ onAddToCart, limit }: ProductGridProps) => {
       </div>
       
       <div className="max-w-[95vw] mx-auto relative">
-        <div className="relative px-8">
-          <div className="relative overflow-hidden" ref={emblaRef}>
-            <div className="flex">
-              {displayedProducts.map((product) => (
-                <div key={product.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_33.33%] pl-4">
-                  <div 
-                    className="group relative overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:shadow-xl h-full mx-2"
-                  >
-                    <div className="aspect-square overflow-hidden bg-gray-50 flex items-center justify-center">
-                      <div className="relative w-full h-full">
-                        <img
-                          src={product.image || "https://placehold.co/800x800"}
-                          alt={product.name}
-                          className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${
-                            product.presentationImage ? 'group-hover:opacity-0' : ''
-                          }`}
-                        />
-                        {product.presentationImage && (
-                          <img
-                            src={product.presentationImage}
-                            alt={`${product.name} presentation`}
-                            className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                          />
-                        )}
-                      </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full px-4"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {displayedProducts.map((product) => (
+              <CarouselItem
+                key={product.id}
+                className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+              >
+                <div
+                  className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer h-[500px] flex flex-col"
+                >
+                  <div className="h-[300px] overflow-hidden bg-gray-50 flex items-center justify-center relative">
+                    <img
+                      src={product.image || "https://placehold.co/800x800"}
+                      alt={product.name}
+                      className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${
+                        product.presentationImage ? 'group-hover:opacity-0' : ''
+                      }`}
+                    />
+                    {product.presentationImage && (
+                      <img
+                        src={product.presentationImage}
+                        alt={`${product.name} presentation`}
+                        className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col flex-grow p-6 bg-white justify-between">
+                    <div>
+                      <div className="text-sm text-gray-500 mb-1">{product.name}</div>
+                      <h3 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                        {product.description}
+                      </p>
                     </div>
-                    <div className="p-4 space-y-2">
-                      <div className="text-xs text-gray-500">{product.name}</div>
-                      <h3 className="font-sans text-lg font-medium text-primary">{product.name}</h3>
-                      <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                      <div className="flex items-center justify-between">
-                        <p className="text-lg font-semibold text-primary">À partir de {product.startingPrice} TND</p>
-                        <button
-                          onClick={() => navigate('/personalization')}
-                          className="rounded-full bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-primary/90"
-                        >
-                          Personnaliser
-                        </button>
-                      </div>
+                    <div>
+                      <p className="text-lg font-medium mb-4 text-primary">
+                        À partir de {product.startingPrice} TND
+                      </p>
+                      <button
+                        className="w-full bg-primary hover:bg-primary/90 text-white transition-colors py-3 rounded-lg font-medium"
+                        onClick={() => navigate('/personalization')}
+                      >
+                        Personnaliser
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="hidden md:block">
+            <CarouselPrevious className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
+            <CarouselNext className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white shadow-lg hover:bg-gray-50" />
           </div>
-          
-          <button 
-            onClick={scrollPrev}
-            className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-100 flex items-center justify-center transition-all duration-200 border border-gray-200"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-          
-          <button 
-            onClick={scrollNext}
-            className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-100 flex items-center justify-center transition-all duration-200 border border-gray-200"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
+        </Carousel>
       </div>
     </div>
   );
