@@ -237,17 +237,20 @@
         // Default banner image
         let bannerImage = "bgsaison2.png";
         
-        // Debug comparison to check what's happening
+        // Debug comparison
         console.log("ID Chapter type:", typeof idChapter);
-        console.log("Is idChapter === '11'?", idChapter === "11");
+        console.log("ID Chapter value:", idChapter);
         
-        // FIX: Updated condition checks for chapter 11 and corrected the image path
-        if (idChapter && idChapter >= "1" && idChapter <= "7") { 
-            bannerImage = "topbanner.png"; 
-        } else if (idChapter === "11") { 
-            // Use the specific banner image for chapter 11
-            bannerImage = "saisonsimages/saison3chap12025.png"; 
-            console.log("Setting special banner for chapter 11"); // Debug log
+        // COMPLETELY REWRITTEN APPROACH: Direct check for specific chapter IDs
+        if (idChapter === "11") {
+            // Special case for chapter 11
+            bannerImage = "saisonsimages/saison3chap12025.png";
+            console.log("SPECIAL CASE: Setting banner for chapter 11");
+        } else if (idChapter && parseInt(idChapter) >= 1 && parseInt(idChapter) <= 7) {
+            bannerImage = "topbanner.png";
+            console.log("Setting banner for chapters 1-7");
+        } else {
+            console.log("Using default banner");
         }
         
         // Apply the banner image
