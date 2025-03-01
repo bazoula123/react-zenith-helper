@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar">
 
@@ -177,8 +178,9 @@
                 </ul>
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link logout-icon"
-                            href="https://draminesaid.com/"><i class="bi bi-box-arrow-right"></i></a>
+                        <a class="nav-link logout-icon" id="logout-btn" href="#">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -203,29 +205,47 @@
             </div>
         </div>
     </footer>
-   <script>
-  console.log("User in localStorage:", localStorage.getItem("user"));
+   
+<script>
+// Self-executing function for security
+(function() {
+    // Check for user authentication
+    if (!localStorage.getItem("user")) {
+        window.location.href = "https://draminesaid.com/videos/cologin.html";
+        return;
+    }
+    
+    // Logout function
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('user');
+        window.location.href = "https://draminesaid.com/videos/cologin.html";
+    });
 
-if (!localStorage.getItem("user")) {
-    window.location.href = "https://draminesaid.com/videos/cologin.html";
-} else {
     document.addEventListener("DOMContentLoaded", function () {
         // Get the 'id_saison' parameter from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const idSaison = urlParams.get("id_saison");
-            const bannerElement = document.getElementById("bannerbg");
+        const bannerElement = document.getElementById("bannerbg");
 
-            if (idSaison === "4" || idSaison ==='5' ) {
+        if (idSaison === "4" || idSaison ==='5' ) {
             bannerElement.style.backgroundImage = "url('bgsaison2.png')";
-            } else {
+        } else {
             bannerElement.style.backgroundImage = "url('topbanner.png')";
-            }
+        }
+        
         // Construct API URL with or without 'id_saison'
         let apiUrl = "https://plateform.draminesaid.com/app/get_chapters.php";
         if (idSaison) {
             apiUrl += `?id_saison=${encodeURIComponent(idSaison)}`;
         }
 
+        // Use a secure fetch function
+        fetchChapters(apiUrl, idSaison);
+    });
+    
+    // Encapsulated fetch function for better security
+    function fetchChapters(apiUrl, idSaison) {
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
@@ -235,12 +255,7 @@ if (!localStorage.getItem("user")) {
                     
                     data.chapters.forEach(chapter => {
                         const link = document.createElement('a');
-                          if (idSaison === "4" || idSaison ==='5' ) {
-                        console.log("idSaison:", idSaison);
-                        link.href = `souschapters.html?id_chapter=${chapter.id_chapter}`;        
-                            } else {
-                        link.href = `souschapters.html?id_chapter=${chapter.id_chapter}`;       
-                             }
+                        link.href = `souschapters.html?id_chapter=${chapter.id_chapter}`;
 
                         const banner = document.createElement('div');
                         banner.className = 'small-banner';
@@ -253,11 +268,17 @@ if (!localStorage.getItem("user")) {
                 }
             })
             .catch(error => console.error('Error fetching chapters:', error));
+    }
+    
+    // Security measures
+    document.addEventListener('contextmenu', (event) => event.preventDefault());
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+            event.preventDefault();
+        }
     });
-}
-
+})();
 </script>
-
 </body>
 
 </html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar">
 
@@ -147,7 +148,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link logout-icon" href="https://draminesaid.com/">
+                        <a class="nav-link logout-icon" id="logout-btn" href="#">
                             <i class="bi bi-box-arrow-right"></i>
                         </a>
                     </li>
@@ -163,12 +164,22 @@
     <footer class="footer mt-5">
         <span>© 2024 Dr Amine Said | Développé Par <strong>Hola!Studio</strong></span>
     </footer>
+
 <script>
-if (!localStorage.getItem("user")) {
-    window.location.href = "https://draminesaid.com/videos/cologin.html";
-}
-</script>
-<script>
+// Self-executing function for security
+(function() {
+    // Check for user authentication
+    if (!localStorage.getItem("user")) {
+        window.location.href = "https://draminesaid.com/videos/cologin.html";
+    }
+    
+    // Logout function
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('user');
+        window.location.href = "https://draminesaid.com/videos/cologin.html";
+    });
+    
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const saison = urlParams.get("saison");
@@ -201,6 +212,15 @@ if (!localStorage.getItem("user")) {
 
     // Inject the banner into the container
     bannerContainer.innerHTML = bannerHTML;
+    
+    // Security measures
+    document.addEventListener('contextmenu', (event) => event.preventDefault());
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+            event.preventDefault();
+        }
+    });
+})();
 </script>
 
     <!-- Bootstrap JS -->
