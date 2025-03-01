@@ -225,15 +225,31 @@
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         const idChapter = urlParams.get("id_chapter");
+        console.log("ID Chapter:", idChapter); // Debug log to verify the value
 
-        // Change banner image if id_chapter is 11
+        // Change banner image based on id_chapter
         const banner = document.getElementById("bannerbg");
-        if (idChapter >= "1" && idChapter <= "7" ) { 
-            banner.style.backgroundImage="url('topbanner.png')"; 
-        } else if (idChapter==="11" ) { 
-            banner.style.backgroundImage="url('saisonsimages/saison3chap12025.png')"; 
+        if (!banner) {
+            console.error("Banner element not found");
+            return;
+        }
+
+        // Set default banner image
+        let bannerImage = "bgsaison2.png";
+
+        // Update banner image based on id_chapter
+        if (idChapter >= "1" && idChapter <= "7") { 
+            bannerImage = "topbanner.png"; 
+        } else if (idChapter === "11") { 
+            bannerImage = "saisonsimages/saison3chap12025.png"; 
+            console.log("Setting special banner for chapter 11"); // Debug log
         }
         
+        // Apply the banner image
+        banner.style.backgroundImage = `url('${bannerImage}')`;
+        console.log("Banner image set to:", bannerImage); // Debug log
+        
+        // Construct API URL with id_chapter parameter
         let apiUrl = "https://plateform.draminesaid.com/app/get_souschapters.php";
         if (idChapter) {
             apiUrl += `?id_chapter=${encodeURIComponent(idChapter)}`;
@@ -246,13 +262,25 @@
     // Encapsulated fetch function for better security
     function fetchSouschapters(apiUrl) {
         fetch(apiUrl)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.length > 0) {
-                    const container = document.getElementById('chapters-container');
-                    container.innerHTML = "";
+                console.log("API Response:", data); // Debug log
+                const container = document.getElementById('chapters-container');
+                if (!container) {
+                    console.error("Chapters container not found");
+                    return;
+                }
+                
+                container.innerHTML = "";
 
+                if (data.length > 0) {
                     data.forEach(souschapter => { 
+                        console.log("Processing souschapter:", souschapter); // Debug log
                         const link = document.createElement('a');
                         link.href = `videos.html?cat_video=${souschapter.tovideopage}`;
 
@@ -265,9 +293,16 @@
                     });
                 } else {
                     console.error("No souschapters found.");
+                    container.innerHTML = "<p class='text-center'>No souschapters found.</p>";
                 }
             })
-            .catch(error => console.error('Error fetching souschapters:', error));
+            .catch(error => {
+                console.error('Error fetching souschapters:', error);
+                const container = document.getElementById('chapters-container');
+                if (container) {
+                    container.innerHTML = `<p class='text-center'>Error loading data: ${error.message}</p>`;
+                }
+            });
     }
     
     // Security measures
