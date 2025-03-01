@@ -234,13 +234,18 @@
             return;
         }
 
-        // Set default banner image
+        // Set default banner image and explicitly check string equality for chapter 11
         let bannerImage = "bgsaison2.png";
 
-        // Update banner image based on id_chapter
-        if (idChapter >= "1" && idChapter <= "7") { 
+        // Debug comparison to check what's happening
+        console.log("ID Chapter type:", typeof idChapter);
+        console.log("Is idChapter === '11'?", idChapter === "11");
+        
+        // Update banner image based on id_chapter with explicit string comparison
+        if (idChapter && idChapter >= "1" && idChapter <= "7") { 
             bannerImage = "topbanner.png"; 
-        } else if (idChapter === "11") { 
+        } else if (idChapter && idChapter === "11") { 
+            // Force the correct banner image for chapter 11
             bannerImage = "saisonsimages/saison3chap12025.png"; 
             console.log("Setting special banner for chapter 11"); // Debug log
         }
