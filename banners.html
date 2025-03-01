@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.2/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Alexandria-Regular';
+            src: url('Alexandria-Regular.ttf') format('truetype');
+        }
+
+        html,
+        body {
+            font-family: 'Alexandria-Regular', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            overflow-x: hidden;
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 30vh;
+            background-image: url('topbanner.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-align: center;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .small-banners-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            margin-top: 80%;
+        }
+
+        .small-banner {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            background-color: #ddd;
+            border-radius: 8px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .small-banner:hover {
+            transform: scale(1.02);
+            border: 2px solid #007bff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 576px) {
+            .smallbannermoved {
+                margin-top: -70%;
+                margin-bottom: 100%;
+            }
+
+            .banner-image {
+                height: 50vh;
+                background-size: contain;
+                background-position: top center;
+            }
+
+            .small-banners-container {
+                width: 90%;
+                margin-top: -50px;
+                margin: 5px auto;
+            }
+
+            .small-banner {
+                height: 150px;
+            }
+        }
+
+        @media (min-width: 577px) and (max-width: 768px) {
+            .banner-image {
+                height: 28vh;
+            }
+
+            .small-banners-container {
+                width: 80%;
+                margin: 30px auto;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 991px) {
+            .banner-image {
+                height: 30vh;
+            }
+
+            .small-banners-container {
+                width: 70%;
+                margin: 30px auto;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .small-banners-container {
+                width: 60%;
+                margin: 30px auto;
+            }
+        }
+
+        .navbar-custom {
+            background-color: #7792bd;
+        }
+
+        .navbar-brand img {
+            height: 60px;
+        }
+
+        .nav-link {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            color: lightgray;
+        }
+
+        .logout-icon {
+            color: white;
+            font-family: Helvetica, sans-serif;
+            font-size: 1.3rem;
+        }
+
+        .footer {
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer .logo {
+            height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="https://draminesaid.com/">
+                <img src="https://draminesaid.com/wp-content/uploads/2024/11/Dramine-White-logo-199x112.png" alt="Dr Amine Said Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="saisonsnew.html">الحصص</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link logout-icon"
+                            href="https://draminesaid.com/"><i class="bi bi-box-arrow-right"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="banner-image" id="bannerbg" ></div>
+    <div class="smallbannermoved">
+        <div class="small-banners-container" id="chapters-container">
+            <!-- Chapters will be loaded dynamically here -->
+        </div>
+    </div>
+    <footer class="footer py-3">
+        <div class="container text-center d-flex justify-content-between align-items-center">
+            <div class="center-footer">
+                <span>© 2024 Dr Amine Said</span>
+            </div>
+            <div class="right-footer">
+                <span>Développé Par <strong>Hola!Studio</strong></span>
+            </div>
+            <div class="left-footer">
+                <img src="logo.png" alt="Logo" class="logo" />
+            </div>
+        </div>
+    </footer>
+   <script>
+  console.log("User in localStorage:", localStorage.getItem("user"));
+
+if (!localStorage.getItem("user")) {
+    window.location.href = "https://draminesaid.com/videos/cologin.html";
+} else {
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the 'id_saison' parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const idSaison = urlParams.get("id_saison");
+            const bannerElement = document.getElementById("bannerbg");
+
+            if (idSaison === "4" || idSaison ==='5' ) {
+            bannerElement.style.backgroundImage = "url('bgsaison2.png')";
+            } else {
+            bannerElement.style.backgroundImage = "url('topbanner.png')";
+            }
+        // Construct API URL with or without 'id_saison'
+        let apiUrl = "https://plateform.draminesaid.com/app/get_chapters.php";
+        if (idSaison) {
+            apiUrl += `?id_saison=${encodeURIComponent(idSaison)}`;
+        }
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.chapters.length > 0) {
+                    const container = document.getElementById('chapters-container');
+                    container.innerHTML = "";
+                    
+                    data.chapters.forEach(chapter => {
+                        const link = document.createElement('a');
+                          if (idSaison === "4" || idSaison ==='5' ) {
+                        console.log("idSaison:", idSaison);
+                        link.href = `souschapters.html?id_chapter=${chapter.id_chapter}`;        
+                            } else {
+                        link.href = `souschapters.html?id_chapter=${chapter.id_chapter}`;       
+                             }
+
+                        const banner = document.createElement('div');
+                        banner.className = 'small-banner';
+                        banner.style.backgroundImage = `url('${chapter.photo_chapter}')`;
+                        link.appendChild(banner);
+                        container.appendChild(link);
+                    });
+                } else {
+                    console.error("No chapters found.");
+                }
+            })
+            .catch(error => console.error('Error fetching chapters:', error));
+    });
+}
+
+</script>
+
+</body>
+
+</html>
