@@ -41,24 +41,26 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={true} />
+      <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
       
-      <SafeAreaView style={styles.mapContainer} edges={['top']}>
+      <View style={styles.mapContainer}>
         <MapComponent onRegionChange={handleRegionChange} />
         
-        <HeaderMap />
-        
-        <View style={[
-          styles.searchBarContainer, 
-          isLandscape && styles.searchBarContainerLandscape,
-          isSmallDevice && styles.searchBarContainerSmall
-        ]}>
-          <SearchBarComponent onSearch={handleSearch} />
-        </View>
-        
-        <FloatingLocationButton onPress={handleUserLocation} />
-        <ActionButtons />
-      </SafeAreaView>
+        <SafeAreaView edges={['top']} style={styles.contentContainer}>
+          <HeaderMap />
+          
+          <View style={[
+            styles.searchBarContainer, 
+            isLandscape && styles.searchBarContainerLandscape,
+            isSmallDevice && styles.searchBarContainerSmall
+          ]}>
+            <SearchBarComponent onSearch={handleSearch} />
+          </View>
+          
+          <FloatingLocationButton onPress={handleUserLocation} />
+          <ActionButtons />
+        </SafeAreaView>
+      </View>
 
       <View style={styles.footerContainer}>
         <FooterNavigator />
@@ -70,11 +72,19 @@ const MapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
   },
   mapContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    position: 'relative',
+  },
+  contentContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 5,
   },
   searchBarContainer: {
     position: 'absolute',

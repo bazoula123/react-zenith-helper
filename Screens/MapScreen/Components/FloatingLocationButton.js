@@ -5,13 +5,21 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '../../../common/design';
 
 const FloatingLocationButton = ({ onPress }) => {
-  const windowWidth = Dimensions.get('window').width;
-  const isSmallDevice = windowWidth < 375;
+  const { width, height } = Dimensions.get('window');
+  const isSmallDevice = width < 375;
+  const isLandscape = width > height;
 
   return (
-    <View style={[styles.container, isSmallDevice && styles.containerSmall]}>
+    <View style={[
+      styles.container, 
+      isSmallDevice && styles.containerSmall,
+      isLandscape && styles.containerLandscape
+    ]}>
       <TouchableOpacity
-        style={[styles.button, isSmallDevice && styles.buttonSmall]}
+        style={[
+          styles.button, 
+          isSmallDevice && styles.buttonSmall
+        ]}
         onPress={onPress}
         activeOpacity={0.7}
       >
@@ -29,12 +37,16 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     right: 16,
-    bottom: 130, // Adjusted to be higher than the footer
+    bottom: 130,
     zIndex: 4,
   },
   containerSmall: {
     right: 12,
     bottom: 100,
+  },
+  containerLandscape: {
+    bottom: 80,
+    right: 20,
   },
   button: {
     width: 50,

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Marker } from 'react-native-maps';
-import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '../../../common/design';
 
@@ -29,8 +29,10 @@ const CustomMarker = ({ food, onPress }) => {
       onPress={() => onPress?.(food)}
     >
       <View style={styles.markerContainer}>
-        <View style={styles.markerOuter}>
-          <MaterialIcons name="restaurant" size={20} color="white" />
+        <View style={styles.markerRing}>
+          <View style={styles.markerOuter}>
+            <MaterialIcons name="restaurant-menu" size={18} color="white" />
+          </View>
         </View>
         <View style={styles.markerTriangle} />
       </View>
@@ -42,11 +44,21 @@ const styles = StyleSheet.create({
   markerContainer: {
     alignItems: 'center',
   },
+  markerRing: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
   markerOuter: {
     backgroundColor: Colors.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -55,11 +67,11 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
   },
@@ -68,14 +80,14 @@ const styles = StyleSheet.create({
     height: 0,
     backgroundColor: 'transparent',
     borderStyle: 'solid',
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
     borderBottomWidth: 0,
-    borderTopWidth: 14,
+    borderTopWidth: 12,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderTopColor: Colors.primary,
-    transform: [{ translateY: -5 }],
+    transform: [{ translateY: -3 }],
   },
 });
 
