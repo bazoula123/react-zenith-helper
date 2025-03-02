@@ -1,0 +1,104 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import { mapCustomStyle } from '../mapStyle';
+import { useNavigation } from '@react-navigation/native';
+import { Colors } from '../../../common/design';
+import FoodMarkerModal from './FoodMarkerModal';
+import CustomMarker from './CustomMarker';
+
+const MapComponent = ({ onRegionChange }) => {
+  const [foodLocations, setFoodLocations] = useState([]);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const navigation = useNavigation();
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    fetchFoodLocations();
+  }, []);
+
+  const fetchFoodLocations = async () => {
+    try {
+      const response = await fetch('http://192.168.1.11:5002/api/foods/foodlocations');
+      const data = await response.json();
+      console.log('Fetched food locations:', data);
+      setFoodLocations(data);
+    } catch (error) {
+      console.error('Error fetching food locations:', error);
+    }
+  };
+
+  const handleMarkerPress = (food) => {
+    setSelectedFood(food);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  const animateToRegion = (region) => {
+    mapRef.current?.animateToRegion(region, 1000);
+  };
+
+  const initialRegion = {
+    latitude: 45.5017,
+    longitude: -73.5673,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  };
+
+  return (
+    <View style={styles.container}>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        customMapStyle={mapCustomStyle}
+        initialRegion={initialRegion}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        showsCompass={true}
+        showsScale={true}
+        showsBuildings={true}
+        showsTraffic={false}
+        showsIndoors={true}
+        toolbarEnabled={false}
+        loadingEnabled={true}
+        loadingIndicatorColor={Colors.secondary}
+        loadingBackgroundColor="#FFFFFF"
+        onRegionChange={onRegionChange}
+      >
+        {foodLocations.map((food) => (
+          <CustomMarker
+            key={food.id_food}
+            food={food}
+          />
+        ))}
+      </MapView>
+
+      <FoodMarkerModal
+        isVisible={modalVisible}
+        onClose={handleCloseModal}
+        foodData={selectedFood}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+});
+
+export default MapComponent;
