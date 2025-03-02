@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Marker } from 'react-native-maps';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '../../../common/design';
 
 const CustomMarker = ({ food, onPress }) => {
@@ -30,7 +30,7 @@ const CustomMarker = ({ food, onPress }) => {
     >
       <View style={styles.markerContainer}>
         <View style={styles.markerOuter}>
-          <Icon name="fast-food" size={20} color={Colors.primary} />
+          <MaterialIcons name="restaurant" size={20} color="white" />
         </View>
         <View style={styles.markerTriangle} />
       </View>
@@ -43,29 +43,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   markerOuter: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.primary,
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: 'white',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   markerTriangle: {
     width: 0,
     height: 0,
     backgroundColor: 'transparent',
     borderStyle: 'solid',
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
     borderBottomWidth: 0,
-    borderTopWidth: 12,
+    borderTopWidth: 14,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderTopColor: Colors.primary,

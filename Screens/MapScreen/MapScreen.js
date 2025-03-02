@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { StyleSheet, View, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FooterNavigator from '../FooterNavigator/FooterNavigator';
 import MapComponent from './Components/MapComponent';
@@ -12,6 +12,15 @@ import { Colors } from '../../common/design';
 
 const MapScreen = () => {
   const [mapRegion, setMapRegion] = useState(null);
+  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+
+  // Add responsive layout
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
 
   const handleRegionChange = (region) => {
     setMapRegion(region);
@@ -27,6 +36,9 @@ const MapScreen = () => {
     // Implement user location functionality here
   };
 
+  const isLandscape = dimensions.width > dimensions.height;
+  const isSmallDevice = dimensions.width < 375;
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={true} />
@@ -36,14 +48,15 @@ const MapScreen = () => {
         
         <HeaderMap />
         
-        <View style={styles.searchBarContainer}>
-          <SearchBarComponent 
-            onSearch={handleSearch}
-            onLocate={handleUserLocation}
-          />
+        <View style={[
+          styles.searchBarContainer, 
+          isLandscape && styles.searchBarContainerLandscape,
+          isSmallDevice && styles.searchBarContainerSmall
+        ]}>
+          <SearchBarComponent onSearch={handleSearch} />
         </View>
         
-        <FloatingLocationButton />
+        <FloatingLocationButton onPress={handleUserLocation} />
         <ActionButtons />
       </SafeAreaView>
 
@@ -66,9 +79,17 @@ const styles = StyleSheet.create({
   searchBarContainer: {
     position: 'absolute',
     top: 100,
-    left: 0,
-    right: 0,
+    left: 16,
+    right: 16,
     zIndex: 5,
+  },
+  searchBarContainerLandscape: {
+    top: 70,
+    left: 100,
+    right: 100,
+  },
+  searchBarContainerSmall: {
+    top: 80,
   },
   footerContainer: {
     position: 'absolute',

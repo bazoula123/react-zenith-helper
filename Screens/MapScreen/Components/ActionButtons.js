@@ -1,12 +1,14 @@
 
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Platform, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Colors } from '../../../common/design';
+import { Colors, Typography } from '../../../common/design';
 
 const ActionButtons = () => {
   const navigation = useNavigation();
+  const windowWidth = Dimensions.get('window').width;
+  const isSmallDevice = windowWidth < 375;
 
   const handleDonateFood = () => {
     navigation.navigate('DonateScreen');
@@ -17,23 +19,39 @@ const ActionButtons = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isSmallDevice && styles.containerSmall]}>
       <TouchableOpacity
-        style={styles.actionButton}
+        style={[styles.actionButton, isSmallDevice && styles.actionButtonSmall]}
         onPress={handleDonateFood}
         activeOpacity={0.8}
       >
-        <MaterialIcons name="restaurant" size={24} color="white" />
-        <Text style={styles.buttonText}>Donate Food</Text>
+        <MaterialIcons 
+          name="restaurant" 
+          size={isSmallDevice ? 18 : 24} 
+          color="white" 
+        />
+        <Text style={[styles.buttonText, isSmallDevice && styles.buttonTextSmall]}>
+          Donate Food
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.actionButton, styles.findNgoButton]}
+        style={[
+          styles.actionButton, 
+          styles.findNgoButton, 
+          isSmallDevice && styles.actionButtonSmall
+        ]}
         onPress={handleFindNGO}
         activeOpacity={0.8}
       >
-        <MaterialIcons name="location-on" size={24} color="white" />
-        <Text style={styles.buttonText}>Find NGO</Text>
+        <MaterialIcons 
+          name="location-on" 
+          size={isSmallDevice ? 18 : 24} 
+          color="white" 
+        />
+        <Text style={[styles.buttonText, isSmallDevice && styles.buttonTextSmall]}>
+          Find NGO
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -48,6 +66,11 @@ const styles = StyleSheet.create({
     gap: 12,
     zIndex: 4,
   },
+  containerSmall: {
+    left: 12,
+    bottom: 100,
+    gap: 8,
+  },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -55,17 +78,24 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'white',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
       },
       android: {
-        elevation: 4,
+        elevation: 5,
       },
     }),
+  },
+  actionButtonSmall: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
   findNgoButton: {
     backgroundColor: Colors.secondary,
@@ -74,6 +104,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     marginLeft: 8,
+  },
+  buttonTextSmall: {
+    fontSize: 12,
   },
 });
 
