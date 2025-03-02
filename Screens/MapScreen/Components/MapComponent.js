@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { 
   View, 
   StyleSheet,
@@ -13,7 +13,7 @@ import { Colors } from '../../../common/design';
 import FoodMarkerModal from './FoodMarkerModal';
 import CustomMarker from './CustomMarker';
 
-const MapComponent = ({ onRegionChange }) => {
+const MapComponent = forwardRef(({ onRegionChange }, ref) => {
   const [foodLocations, setFoodLocations] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -81,8 +81,8 @@ const MapComponent = ({ onRegionChange }) => {
     longitudeDelta: 0.0421,
   };
 
-  // Expose the goToUserLocation method via useImperativeHandle or via props
-  React.useImperativeHandle(
+  // Expose the goToUserLocation method via useImperativeHandle
+  useImperativeHandle(
     ref,
     () => ({
       goToUserLocation,
@@ -131,7 +131,7 @@ const MapComponent = ({ onRegionChange }) => {
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -142,4 +142,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.forwardRef(MapComponent);
+export default MapComponent;
