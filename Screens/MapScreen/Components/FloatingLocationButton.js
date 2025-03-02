@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { TouchableOpacity, StyleSheet, View, Platform, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { TouchableOpacity, StyleSheet, View, Platform, Dimensions, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '../../../common/design';
 
@@ -8,6 +8,26 @@ const FloatingLocationButton = ({ onPress }) => {
   const { width, height } = Dimensions.get('window');
   const isSmallDevice = width < 375;
   const isLandscape = width > height;
+  const [scaleAnim] = useState(new Animated.Value(1));
+
+  const handlePress = () => {
+    // Create a nice pulse animation when pressed
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    // Call the onPress function from props
+    onPress();
+  };
 
   return (
     <View style={[
@@ -15,20 +35,22 @@ const FloatingLocationButton = ({ onPress }) => {
       isSmallDevice && styles.containerSmall,
       isLandscape && styles.containerLandscape
     ]}>
-      <TouchableOpacity
-        style={[
-          styles.button, 
-          isSmallDevice && styles.buttonSmall
-        ]}
-        onPress={onPress}
-        activeOpacity={0.7}
-      >
-        <MaterialIcons 
-          name="my-location" 
-          size={isSmallDevice ? 20 : 24} 
-          color="white" 
-        />
-      </TouchableOpacity>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <TouchableOpacity
+          style={[
+            styles.button, 
+            isSmallDevice && styles.buttonSmall
+          ]}
+          onPress={handlePress}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons 
+            name="my-location" 
+            size={isSmallDevice ? 20 : 24} 
+            color="white" 
+          />
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 };

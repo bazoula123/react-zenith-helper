@@ -55,12 +55,40 @@ const MapComponent = ({ onRegionChange }) => {
     setUserLocation(coordinate);
   };
 
+  // Add method to navigate to user's location
+  const goToUserLocation = () => {
+    if (userLocation) {
+      const region = {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      animateToRegion(region);
+      console.log('Navigating to user location:', region);
+      return true;
+    } else {
+      console.log('User location not available yet');
+      Alert.alert('Location', 'Waiting for your location. Please make sure location services are enabled.');
+      return false;
+    }
+  };
+
   const initialRegion = {
     latitude: 45.5017,
     longitude: -73.5673,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   };
+
+  // Expose the goToUserLocation method via useImperativeHandle or via props
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      goToUserLocation,
+    }),
+    [userLocation]
+  );
 
   return (
     <View style={styles.container}>
@@ -114,4 +142,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapComponent;
+export default React.forwardRef(MapComponent);

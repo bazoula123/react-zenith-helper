@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FooterNavigator from '../FooterNavigator/FooterNavigator';
@@ -13,6 +13,7 @@ import { Colors } from '../../common/design';
 const MapScreen = () => {
   const [mapRegion, setMapRegion] = useState(null);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const mapRef = useRef(null);
 
   // Add responsive layout
   useEffect(() => {
@@ -32,8 +33,15 @@ const MapScreen = () => {
   };
 
   const handleUserLocation = () => {
-    console.log('Locate user');
-    // Implement user location functionality here
+    console.log('Locating user...');
+    if (mapRef.current) {
+      const success = mapRef.current.goToUserLocation();
+      if (success) {
+        console.log('Successfully navigated to user location');
+      } else {
+        console.log('Failed to navigate to user location');
+      }
+    }
   };
 
   const isLandscape = dimensions.width > dimensions.height;
@@ -44,7 +52,10 @@ const MapScreen = () => {
       <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
       
       <View style={styles.mapContainer}>
-        <MapComponent onRegionChange={handleRegionChange} />
+        <MapComponent 
+          ref={mapRef}
+          onRegionChange={handleRegionChange} 
+        />
         
         <SafeAreaView edges={['top']} style={styles.contentContainer}>
           <HeaderMap />
