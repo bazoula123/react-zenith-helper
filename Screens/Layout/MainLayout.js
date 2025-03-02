@@ -4,15 +4,21 @@ import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../Commons/Header';
 import FooterNavigator from '../FooterNavigator/FooterNavigator';
+import { useRoute } from '@react-navigation/native';
 
 const MainLayout = ({ children }) => {
+  const route = useRoute();
+  const isMapScreen = route.name === 'MapScreen';
+  
+  // For MapScreen, we don't want to show the header
+  // as it has its own header (HeaderMap)
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      {!isMapScreen && <Header />}
       <View style={styles.content}>
         {children}
       </View>
-      <FooterNavigator />
+      {!isMapScreen && <FooterNavigator />}
     </SafeAreaView>
   );
 };
@@ -20,7 +26,7 @@ const MainLayout = ({ children }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // Changed from #F8F9FA to white to match the map
+    backgroundColor: '#FFFFFF',
   },
   content: {
     flex: 1,

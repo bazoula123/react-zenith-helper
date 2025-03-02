@@ -1,37 +1,44 @@
+
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native'; 
+import { Colors, Shadows } from '../../common/design';
 
 const HeaderMap = () => {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const navigation = useNavigation();
 
   const navigateToNotifications = () => {
     navigation.navigate('NotificationScreen'); 
   };
+  
+  const navigateToProfile = () => {
+    navigation.navigate('SettingsScreen');
+  };
 
   return (
-    <SafeAreaView style={[styles.header, { width, top: height * 0.02 }]}>
-      <View>
-        <View style={styles.headerContent}>
-          <View style={styles.profileContainer}>
-            <Image 
-              source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMBoNHTdNFu-NloeUZS5-L9aWbPTmqkCy-Tg&s' }}
-              style={styles.profilePic}
+    <SafeAreaView style={[styles.header, { width }]}>
+      <View style={styles.headerContent}>
+        <TouchableOpacity onPress={navigateToProfile} style={styles.profileContainer}>
+          <Image 
+            source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMBoNHTdNFu-NloeUZS5-L9aWbPTmqkCy-Tg&s' }}
+            style={styles.profilePic}
+          />
+        </TouchableOpacity>
+        
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconContainer} onPress={navigateToNotifications}>
+            <IconButton 
+              icon="bell-outline" 
+              size={24} 
+              color={Colors.primary}
+              onPress={navigateToNotifications} 
+              style={styles.iconButton}
             />
-          </View>
-          <View style={styles.headerIcons}>
-            <View style={styles.iconContainer}>
-              <IconButton 
-                icon="bell-outline" 
-                size={24} 
-                onPress={navigateToNotifications} 
-              />
-            </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -41,9 +48,9 @@ const HeaderMap = () => {
 const styles = StyleSheet.create({
   header: {
     position: 'absolute',
-    zIndex: 1000,
+    zIndex: 10,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -56,16 +63,12 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     backgroundColor: '#FFFFFF',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    ...Shadows.small,
   },
   profilePic: {
     width: 40,
@@ -77,17 +80,15 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     backgroundColor: '#FFFFFF',
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    ...Shadows.small,
+  },
+  iconButton: {
+    margin: 0,
   },
 });
 

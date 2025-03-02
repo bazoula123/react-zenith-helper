@@ -22,8 +22,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     right: 16,
-    bottom: '25%', // Adjusted to be a bit higher on the screen
-    zIndex: 4, // Ensure it's above the map but below the panel
+    bottom: 130, // Adjusted to be higher than the footer
+    zIndex: 4,
   },
   button: {
     width: 50,

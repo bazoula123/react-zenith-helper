@@ -28,51 +28,54 @@ const SearchBarComponent = ({ onSearch, onLocate }) => {
 
   return (
     <View style={styles.container}>
-      <Searchbar
-        placeholder={t('MapScreen.Searchformeals')}
-        onChangeText={handleSearch}
-        value={searchQuery}
-        style={styles.searchBar}
-        inputStyle={styles.searchInput}
-        iconColor={Colors.primary}
-        clearButtonMode="while-editing"
-        onClearIconPress={handleClear}
-        theme={{ roundness: 8 }}
-        elevation={0}
-      />
+      <View style={styles.searchBarWrapper}>
+        <Searchbar
+          placeholder={t('MapScreen.Searchformeals')}
+          onChangeText={handleSearch}
+          value={searchQuery}
+          style={styles.searchBar}
+          inputStyle={styles.searchInput}
+          iconColor={Colors.primary}
+          clearButtonMode="while-editing"
+          onClearIconPress={handleClear}
+          theme={{ roundness: BorderRadius.lg }}
+          elevation={0}
+        />
 
-      <TouchableOpacity
-        style={styles.locateButton}
-        onPress={handleUserLocation}
-        activeOpacity={0.7}
-      >
-        <MaterialIcons name="my-location" size={24} color={Colors.primary} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.locateButton}
+          onPress={handleUserLocation}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="my-location" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    paddingHorizontal: 16,
+  },
+  searchBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-    ...Shadows.small,
+    paddingVertical: 10,
+    ...Shadows.medium,
   },
   searchBar: {
     flex: 1,
-    backgroundColor: '#F0F0F5',
-    borderRadius: BorderRadius.md,
+    backgroundColor: '#FFFFFF',
+    borderRadius: BorderRadius.lg,
     elevation: 0,
-    height: 44,
+    height: 50,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowRadius: 3,
       },
       android: {
         elevation: 0,
@@ -83,22 +86,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   locateButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F0F0F5',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 1,
+        elevation: 3,
       },
     }),
   },

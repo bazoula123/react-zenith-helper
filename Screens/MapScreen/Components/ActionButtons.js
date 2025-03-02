@@ -43,10 +43,10 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     left: 16,
-    bottom: '25%', // Adjusted to be a bit higher on the screen
+    bottom: 130, // Adjusted to be higher than the footer
     flexDirection: 'column',
     gap: 12,
-    zIndex: 4, // Make sure this is lower than the draggable panel but above the map
+    zIndex: 4,
   },
   actionButton: {
     flexDirection: 'row',

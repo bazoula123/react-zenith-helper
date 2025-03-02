@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Marker } from 'react-native-maps';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../../common/design';
 
-const CustomMarker = ({ food }) => {
+const CustomMarker = ({ food, onPress }) => {
   if (!food || !food.availability) return null;
   
   // Parse latitude and longitude safely
@@ -26,6 +26,7 @@ const CustomMarker = ({ food }) => {
     <Marker
       coordinate={{ latitude, longitude }}
       tracksViewChanges={false}
+      onPress={() => onPress?.(food)}
     >
       <View style={styles.markerContainer}>
         <View style={styles.markerOuter}>
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 12,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#fff',
+    borderTopColor: Colors.primary,
     transform: [{ translateY: -5 }],
   },
 });

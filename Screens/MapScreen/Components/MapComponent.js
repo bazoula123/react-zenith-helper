@@ -4,8 +4,9 @@ import {
   View, 
   StyleSheet,
   Platform,
+  Alert,
 } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { mapCustomStyle } from '../mapStyle';
 import { useNavigation } from '@react-navigation/native';
 import { Colors } from '../../../common/design';
@@ -16,6 +17,7 @@ const MapComponent = ({ onRegionChange }) => {
   const [foodLocations, setFoodLocations] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
   const navigation = useNavigation();
   const mapRef = useRef(null);
 
@@ -31,6 +33,7 @@ const MapComponent = ({ onRegionChange }) => {
       setFoodLocations(data);
     } catch (error) {
       console.error('Error fetching food locations:', error);
+      Alert.alert('Error', 'Could not fetch food locations. Please try again later.');
     }
   };
 
@@ -45,6 +48,11 @@ const MapComponent = ({ onRegionChange }) => {
 
   const animateToRegion = (region) => {
     mapRef.current?.animateToRegion(region, 1000);
+  };
+
+  const handleUserLocationChange = (event) => {
+    const { coordinate } = event.nativeEvent;
+    setUserLocation(coordinate);
   };
 
   const initialRegion = {
@@ -74,11 +82,16 @@ const MapComponent = ({ onRegionChange }) => {
         loadingIndicatorColor={Colors.secondary}
         loadingBackgroundColor="#FFFFFF"
         onRegionChange={onRegionChange}
+        onUserLocationChange={handleUserLocationChange}
+        minZoomLevel={10}
+        maxZoomLevel={20}
+        rotateEnabled={true}
       >
         {foodLocations.map((food) => (
           <CustomMarker
             key={food.id_food}
             food={food}
+            onPress={() => handleMarkerPress(food)}
           />
         ))}
       </MapView>
