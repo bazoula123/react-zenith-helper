@@ -18,7 +18,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
     <div className="flex items-center gap-4">
       <button
         onClick={() => navigate('/favorites')}
-        className="hidden md:flex items-center gap-1.5 text-gray-600 hover:text-black transition-colors relative"
+        className="hidden md:flex items-center gap-1.5 text-gray-600 hover:text-black transition-colors relative py-2.5"
       >
         <Heart className="h-5 w-5" />
         <span className="text-xs font-medium">Wishlist</span>
@@ -31,7 +31,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
       <button
         onClick={() => navigate('/cart')}
-        className="flex items-center gap-1.5 text-gray-600 hover:text-black transition-colors relative"
+        className="flex items-center gap-1.5 text-gray-600 hover:text-black transition-colors relative py-2.5"
       >
         <ShoppingCart className="h-5 w-5" />
         <span className="text-xs font-medium hidden md:inline">Panier</span>
@@ -44,7 +44,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
       <button
         onClick={() => navigate('/devis')}
-        className="hidden md:flex items-center gap-1.5 px-4 py-2.5 bg-[#333333] text-white rounded-md hover:bg-[#333333]/90 transition-colors shadow-sm"
+        className="hidden md:flex items-center gap-1.5 px-4 py-3 bg-[#333333] text-white rounded-md hover:bg-[#333333]/90 transition-colors shadow-sm"
       >
         <ClipboardList className="h-4 w-4" />
         <span className="text-xs font-medium">DEMANDE DE DEVIS</span>
