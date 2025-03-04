@@ -44,7 +44,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
       <button
         onClick={() => navigate('/devis')}
-        className="hidden md:flex items-center gap-1.5 px-4 py-1.5 bg-[#333333] text-white rounded-md hover:bg-[#333333]/90 transition-colors shadow-sm"
+        className="hidden md:flex items-center gap-1.5 px-4 py-2.5 bg-[#333333] text-white rounded-md hover:bg-[#333333]/90 transition-colors shadow-sm"
       >
         <ClipboardList className="h-4 w-4" />
         <span className="text-xs font-medium">DEMANDE DE DEVIS</span>

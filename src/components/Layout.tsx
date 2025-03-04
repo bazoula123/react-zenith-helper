@@ -70,7 +70,7 @@ export const Layout = () => {
               />
 
               <Link to="/" className="flex-shrink-0">
-                <img src="/logo.png" alt="ELLES" className="h-12" />
+                <img src="/logo.png" alt="ELLES" className="h-14" />
               </Link>
               
               <SearchBar />

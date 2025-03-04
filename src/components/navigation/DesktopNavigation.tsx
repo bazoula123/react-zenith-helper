@@ -32,13 +32,13 @@ const DesktopNavigation: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/personalization')}
-              className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs font-medium"
+              className="px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-xs font-medium"
             >
               Personalisation
             </button>
             <button
               onClick={() => navigate('/metiers')}
-              className="px-3 py-2 bg-[#FFD700] text-black rounded-md hover:bg-[#FFD700]/90 transition-colors text-xs font-medium shadow-sm"
+              className="px-3 py-2.5 bg-[#FFD700] text-black rounded-md hover:bg-[#FFD700]/90 transition-colors text-xs font-medium shadow-sm"
             >
               MÉTIERS
             </button>
