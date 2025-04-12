@@ -1,6 +1,6 @@
 
-import React, { useMemo, useEffect, useState } from 'react';
-import { View, StyleSheet, Platform, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import PlaceCallout from '../PlaceCallout';
 import { COLORS } from '../../theme/colors';
@@ -19,7 +19,7 @@ const MapContent = ({
   const navigation = useNavigation();
   const { t } = useTranslation();
   const [mapError, setMapError] = useState(false);
-  const [markerKey, setMarkerKey] = useState(Date.now());
+  const [displayMarkers, setDisplayMarkers] = useState([]);
 
   // Debug logs
   console.log('MapContent render with:', { 
@@ -30,173 +30,161 @@ const MapContent = ({
     searchResultsCount: searchResults?.length
   });
 
-  // Safety check for inputs with detailed logging
-  const safeInitialRegion = useMemo(() => {
-    // Validate initialRegion
+  // Create a valid initial region with fallback values
+  const getValidRegion = useCallback(() => {
+    const defaultRegion = {
+      latitude: 36.7755,
+      longitude: 8.7834,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    };
+    
+    // If initial region is missing or invalid, return default
     if (!initialRegion || typeof initialRegion !== 'object') {
-      console.warn('MapContent: Invalid initialRegion provided:', initialRegion);
-      return {
-        latitude: 36.7755,
-        longitude: 8.7834,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
+      return defaultRegion;
     }
     
-    const { latitude, longitude, latitudeDelta, longitudeDelta } = initialRegion;
+    // Make sure all required properties exist and are valid numbers
+    const lat = Number(initialRegion.latitude);
+    const lng = Number(initialRegion.longitude);
+    const latDelta = Number(initialRegion.latitudeDelta);
+    const lngDelta = Number(initialRegion.longitudeDelta);
     
-    // Check if all required properties are valid numbers
-    if (isNaN(Number(latitude)) || isNaN(Number(longitude)) ||
-        isNaN(Number(latitudeDelta)) || isNaN(Number(longitudeDelta))) {
-      console.warn('MapContent: initialRegion contains invalid coordinates:', initialRegion);
-      return {
-        latitude: 36.7755,
-        longitude: 8.7834,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
+    if (isNaN(lat) || isNaN(lng) || isNaN(latDelta) || isNaN(lngDelta)) {
+      return defaultRegion;
     }
     
+    // Return validated region
     return {
-      latitude: Number(latitude),
-      longitude: Number(longitude),
-      latitudeDelta: Number(latitudeDelta),
-      longitudeDelta: Number(longitudeDelta),
+      latitude: lat,
+      longitude: lng,
+      latitudeDelta: latDelta,
+      longitudeDelta: lngDelta,
     };
   }, [initialRegion]);
-  
-  // Display either search results or filtered places with safety checks
-  const displayPlaces = useMemo(() => {
-    try {
-      // Validate inputs are arrays
-      const searchArray = Array.isArray(searchResults) ? searchResults : [];
-      const filteredArray = Array.isArray(filteredPlaces) ? filteredPlaces : [];
-      
-      const result = (searchArray.length > 0) ? searchArray : filteredArray;
-      
-      if (!result || result.length === 0) {
-        console.log('No places to display');
-        return [];
-      }
 
-      // Validate that each place has the required properties
-      return result
+  // Process and validate places data
+  useEffect(() => {
+    try {
+      // Determine which array to use (search results or filtered places)
+      const placesArray = searchResults?.length > 0 ? 
+        (Array.isArray(searchResults) ? searchResults : []) : 
+        (Array.isArray(filteredPlaces) ? filteredPlaces : []);
+      
+      if (placesArray.length === 0) {
+        console.log('No places to display');
+        setDisplayMarkers([]);
+        return;
+      }
+      
+      // Process and validate each place
+      const validMarkers = placesArray
         .filter(place => {
           if (!place || typeof place !== 'object') {
             console.warn('Invalid place object filtered out');
             return false;
           }
           
-          if (!place.location || typeof place.location !== 'object') {
-            console.warn('Place missing location data filtered out:', place.id || 'unknown');
+          const hasLocation = place.location && typeof place.location === 'object';
+          if (!hasLocation) {
+            console.warn('Place missing location data filtered out');
             return false;
           }
-
+          
           const lat = parseFloat(place.location.latitude);
           const lng = parseFloat(place.location.longitude);
           
           if (isNaN(lat) || isNaN(lng)) {
-            console.warn('Place has invalid coordinates filtered out:', place.id || 'unknown', {lat, lng});
+            console.warn('Place has invalid coordinates filtered out');
             return false;
           }
           
           return true;
         })
-        .map(place => {
-          // Ensure each place has all required fields with safe defaults
+        .map((place, index) => {
+          // Create a safe marker object with all required properties
+          const placeId = place.id || `place-${index}-${Date.now()}`;
+          
           return {
-            ...place,
-            id: place.id || `place-${Math.random().toString(36).substring(2, 9)}`,
+            id: placeId,
+            key: `marker-${placeId}-${Date.now()}`,
             name: place.name || 'Unnamed Place',
             description: place.description || '',
             type: place.type || 'location',
+            coordinate: {
+              latitude: parseFloat(place.location.latitude),
+              longitude: parseFloat(place.location.longitude),
+            },
             location: {
+              ...place.location,
               latitude: parseFloat(place.location.latitude),
               longitude: parseFloat(place.location.longitude),
               city: place.location.city || '',
               address: place.location.address || '',
-            }
+            },
+            // Pass through any other properties
+            ...place,
           };
         });
+      
+      console.log(`Processed ${validMarkers.length} valid markers`);
+      if (validMarkers.length > 0) {
+        console.log('Sample marker:', JSON.stringify(validMarkers[0]));
+      }
+      
+      setDisplayMarkers(validMarkers);
     } catch (error) {
-      console.error('Error processing places:', error);
-      return [];
+      console.error('Error processing places for markers:', error);
+      setDisplayMarkers([]);
     }
-  }, [searchResults, filteredPlaces]);
+  }, [filteredPlaces, searchResults]);
 
-  // Log processed places for debugging
+  // Handle user location
   useEffect(() => {
-    console.log(`Processed ${displayPlaces.length} valid places for display`);
-    if (displayPlaces.length > 0) {
-      console.log('Sample place:', JSON.stringify(displayPlaces[0]));
-    }
-  }, [displayPlaces]);
-
-  // Fallback to initialRegion if userLocation is unavailable
-  const safeUserLocation = useMemo(() => {
+    if (!mapRef?.current || !userLocation || mapError) return;
+    
     try {
-      // Check if userLocation is valid
-      if (userLocation && 
-          typeof userLocation === 'object' && 
-          userLocation.latitude !== undefined && 
-          userLocation.longitude !== undefined &&
-          !isNaN(Number(userLocation.latitude)) && 
-          !isNaN(Number(userLocation.longitude))) {
-        return {
-          latitude: Number(userLocation.latitude),
-          longitude: Number(userLocation.longitude),
+      // Validate user location
+      const lat = Number(userLocation.latitude);
+      const lng = Number(userLocation.longitude);
+      
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const validRegion = {
+          latitude: lat,
+          longitude: lng,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         };
+        
+        mapRef.current.animateToRegion(validRegion, 1000);
       }
-      
-      // Log warning and fall back to safe initial region
-      if (userLocation) {
-        console.warn('Invalid userLocation provided:', userLocation);
-      }
-      
-      return safeInitialRegion;
     } catch (error) {
-      console.error('Error processing user location:', error);
-      return safeInitialRegion;
+      console.error('Error animating to user location:', error);
     }
-  }, [userLocation, safeInitialRegion]);
-
-  // Animate map to user location
-  useEffect(() => {
-    if (mapRef?.current && safeUserLocation && !mapError) {
-      try {
-        mapRef.current.animateToRegion(safeUserLocation, 1000);
-      } catch (error) {
-        console.error('Error animating map to user location:', error);
-        setMapError(true);
-      }
-    }
-  }, [safeUserLocation, mapError]);
+  }, [userLocation, mapError]);
 
   // Focus map on search results
   useEffect(() => {
-    if (!mapRef?.current || !Array.isArray(searchResults) || searchResults.length === 0 || mapError) {
-      return;
-    }
+    if (!mapRef?.current || !Array.isArray(searchResults) || searchResults.length === 0 || mapError) return;
     
     try {
       if (searchResults.length === 1) {
-        const place = searchResults[0] || {};
-        const location = place.location || {};
-        const latitude = parseFloat(location.latitude);
-        const longitude = parseFloat(location.longitude);
-        
-        if (!isNaN(latitude) && !isNaN(longitude)) {
-          mapRef.current.animateToRegion({
-            latitude,
-            longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }, 1000);
+        const place = searchResults[0];
+        if (place && place.location) {
+          const lat = parseFloat(place.location.latitude);
+          const lng = parseFloat(place.location.longitude);
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            mapRef.current.animateToRegion({
+              latitude: lat,
+              longitude: lng,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }, 1000);
+          }
         }
       } else {
-        const coordinates = searchResults
+        const validCoordinates = searchResults
           .filter(place => place && place.location)
           .map(place => {
             const lat = parseFloat(place.location.latitude);
@@ -205,8 +193,8 @@ const MapContent = ({
           })
           .filter(Boolean);
           
-        if (coordinates.length > 0) {
-          mapRef.current.fitToCoordinates(coordinates, {
+        if (validCoordinates.length > 0) {
+          mapRef.current.fitToCoordinates(validCoordinates, {
             edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
             animated: true,
           });
@@ -214,10 +202,10 @@ const MapContent = ({
       }
     } catch (error) {
       console.error('Error focusing map on search results:', error);
-      setMapError(true);
     }
   }, [searchResults, mapError]);
 
+  // Navigate to place details
   const handlePlacePress = (place) => {
     try {
       if (place && place.id) {
@@ -230,64 +218,7 @@ const MapContent = ({
     }
   };
 
-  // Force re-render markers when displayPlaces changes
-  useEffect(() => {
-    setMarkerKey(Date.now());
-  }, [displayPlaces]);
-
-  // Render markers with extensive null checking
-  const renderMarkers = () => {
-    if (mapError || !Array.isArray(displayPlaces) || displayPlaces.length === 0) {
-      console.log('No markers to render: mapError or empty displayPlaces');
-      return null;
-    }
-    
-    try {
-      // Return an array of valid markers
-      return displayPlaces.map((place, index) => {
-        if (!place || !place.location) {
-          console.warn('Invalid place skipped in marker rendering');
-          return null;
-        }
-        
-        const latitude = parseFloat(place.location.latitude);
-        const longitude = parseFloat(place.location.longitude);
-        
-        if (isNaN(latitude) || isNaN(longitude)) {
-          console.warn('Invalid coordinates skipped in marker:', place.id, {latitude, longitude});
-          return null;
-        }
-        
-        const placeId = place.id || `place-${index}-${Math.random().toString(36).substring(2, 9)}`;
-        console.log(`Rendering marker ${index} with id ${placeId} at ${latitude},${longitude}`);
-        
-        return (
-          <Marker
-            key={`place-${placeId}-${markerKey}-${index}`}
-            identifier={`marker-${placeId}`}
-            coordinate={{
-              latitude: latitude,
-              longitude: longitude
-            }}
-            pinColor={COLORS.primary}
-            onPress={() => handlePlacePress(place)}
-            tracksViewChanges={false}
-          >
-            <Callout tooltip onPress={() => handlePlacePress(place)}>
-              <PlaceCallout
-                place={place}
-                onDetailsPress={() => handlePlacePress(place)}
-              />
-            </Callout>
-          </Marker>
-        );
-      }).filter(Boolean); // Filter out null markers
-    } catch (error) {
-      console.error('Error rendering markers:', error);
-      return null;
-    }
-  };
-
+  // Render error state
   if (mapError) {
     return (
       <View style={[styles.mapWrapper, styles.errorContainer]}>
@@ -305,7 +236,7 @@ const MapContent = ({
         ref={mapRef}
         style={styles.map}
         provider={null}
-        initialRegion={safeInitialRegion}
+        initialRegion={getValidRegion()}
         showsUserLocation
         showsMyLocationButton
         showsCompass
@@ -329,10 +260,24 @@ const MapContent = ({
         showsBuildings={false}
         showsTraffic={false}
         showsIndoors={false}
-        legalLabelInsets={{ bottom: -100, right: -100 }}
-        attributionEnabled={false}
       >
-        {renderMarkers()}
+        {displayMarkers.map((marker) => (
+          <Marker
+            key={marker.key}
+            identifier={`marker-${marker.id}`}
+            coordinate={marker.coordinate}
+            pinColor={COLORS.primary}
+            onPress={() => handlePlacePress(marker)}
+            tracksViewChanges={false}
+          >
+            <Callout tooltip onPress={() => handlePlacePress(marker)}>
+              <PlaceCallout
+                place={marker}
+                onDetailsPress={() => handlePlacePress(marker)}
+              />
+            </Callout>
+          </Marker>
+        ))}
       </MapView>
     </View>
   );

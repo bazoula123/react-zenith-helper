@@ -15,19 +15,25 @@ import MapView, { Marker } from 'react-native-maps';
 
 const LocationStep = ({ formData, setFormData }) => {
   const [mapRegion, setMapRegion] = useState(null);
-  const userLocation = useLocationPermission();
+  const { userLocation } = useLocationPermission();
 
   useEffect(() => {
     // Initialize from existing formData or user location
     if (formData.location && formData.location.latitude && formData.location.longitude) {
       setMapRegion({
-        latitude: formData.location.latitude,
-        longitude: formData.location.longitude,
+        latitude: parseFloat(formData.location.latitude),
+        longitude: parseFloat(formData.location.longitude),
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       });
-    } else if (userLocation) {
-      setMapRegion(userLocation);
+    } else if (userLocation && userLocation.latitude && userLocation.longitude) {
+      const region = {
+        latitude: parseFloat(userLocation.latitude),
+        longitude: parseFloat(userLocation.longitude),
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+      setMapRegion(region);
       // Update formData with user location
       setFormData({
         ...formData,
@@ -68,6 +74,28 @@ const LocationStep = ({ formData, setFormData }) => {
     });
   };
 
+  // Get marker coordinate safely
+  const getMarkerCoordinate = () => {
+    if (!formData.location) return null;
+    
+    const lat = parseFloat(formData.location.latitude);
+    const lng = parseFloat(formData.location.longitude);
+    
+    if (isNaN(lat) || isNaN(lng)) return null;
+    
+    return {
+      latitude: lat,
+      longitude: lng
+    };
+  };
+
+  // Handle marker drag end
+  const handleMarkerDragEnd = (e) => {
+    const { coordinate } = e.nativeEvent;
+    handleLocationChange('latitude', coordinate.latitude);
+    handleLocationChange('longitude', coordinate.longitude);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.stepTitle}>Emplacement</Text>
@@ -79,18 +107,13 @@ const LocationStep = ({ formData, setFormData }) => {
             region={mapRegion}
             onPress={handleMapPress}
           >
-            <Marker
-              coordinate={{
-                latitude: formData.location?.latitude || mapRegion.latitude,
-                longitude: formData.location?.longitude || mapRegion.longitude,
-              }}
-              draggable
-              onDragEnd={(e) => {
-                const { coordinate } = e.nativeEvent;
-                handleLocationChange('latitude', coordinate.latitude);
-                handleLocationChange('longitude', coordinate.longitude);
-              }}
-            />
+            {getMarkerCoordinate() && (
+              <Marker
+                coordinate={getMarkerCoordinate()}
+                draggable
+                onDragEnd={handleMarkerDragEnd}
+              />
+            )}
           </MapView>
           <Text style={styles.mapHint}>Appuyez sur la carte pour placer le marqueur ou faites-le glisser</Text>
         </View>

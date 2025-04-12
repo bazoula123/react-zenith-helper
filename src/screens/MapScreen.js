@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, StatusBar, Text, Platform, Alert } from 'react-native';
 import { COLORS } from '../theme/colors';
 import { ROUTES } from '../navigation/navigationConstants';
@@ -15,7 +15,6 @@ import { usePlacesData } from '../hooks/usePlacesData';
 import { searchPlaces } from '../services/PlaceService';
 
 // Components
-import MapHeader from '../components/map/MapHeader';
 import CategoryFilters from '../components/map/CategoryFilters';
 import MapContent from '../components/map/MapContent';
 import SearchInput from '../components/map/SearchInput';
@@ -38,8 +37,10 @@ const MapScreen = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   
-  // Custom hooks with error handling
+  // Get user location
   const { userLocation, locationError } = useLocationPermission();
+  
+  // Fetch places data
   const { places, isLoading, error, fetchPlaces } = usePlacesData();
   
   // Make sure we have a valid region, falling back to initialRegion if userLocation is null
@@ -73,10 +74,11 @@ const MapScreen = ({ navigation }) => {
     setIsSearching(true);
     try {
       const results = await searchPlaces(query);
-      setSearchResults(results);
+      setSearchResults(results || []);
     } catch (error) {
       console.error('Error searching places:', error);
       Alert.alert('Erreur', 'Impossible de rechercher les lieux.');
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
@@ -88,45 +90,25 @@ const MapScreen = ({ navigation }) => {
   };
 
   // Filter places by type
-  const toggleFilter = useCallback((type) => {
+  const toggleFilter = (type) => {
     setFilterType(filterType === type ? null : type);
     // Clear search when changing filters
     setSearchQuery('');
     setSearchResults([]);
-  }, [filterType]);
+  };
 
-  // Safely extract and validate place data before passing to map
-  const filteredPlaces = useMemo(() => {
+  // Filter places based on selected filter
+  const filteredPlaces = React.useMemo(() => {
     if (!places || !Array.isArray(places)) {
       return [];
     }
 
     // Filter by type if a filter is active
-    const filtered = filterType 
+    return filterType 
       ? places.filter(place => place.type === filterType) 
       : places;
-
-    // Ensure all places have valid coordinates
-    return filtered.map(place => ({
-      ...place,
-      latitude: parseFloat(place.location?.latitude) || mapRegion.latitude,
-      longitude: parseFloat(place.location?.longitude) || mapRegion.longitude,
-      id: place.id || Math.random().toString() // Ensure each place has a unique ID
-    }));
-  }, [places, filterType, mapRegion]);
-
-  // Effect to handle errors in coordinate data
-  useEffect(() => {
-    if (places && Array.isArray(places)) {
-      const invalidPlaces = places.filter(
-        place => isNaN(parseFloat(place.location?.latitude)) || isNaN(parseFloat(place.location?.longitude))
-      );
       
-      if (invalidPlaces.length > 0) {
-        console.warn('Warning: Some places have invalid coordinates', invalidPlaces);
-      }
-    }
-  }, [places]);
+  }, [places, filterType]);
 
   // Handle location errors
   useEffect(() => {
@@ -135,9 +117,10 @@ const MapScreen = ({ navigation }) => {
     }
   }, [locationError]);
 
-  const retryFetchPlaces = useCallback(() => {
+  // Retry fetching places
+  const retryFetchPlaces = () => {
     fetchPlaces();
-  }, [fetchPlaces]);
+  };
 
   if (isLoading) {
     return <LoadingState />;
