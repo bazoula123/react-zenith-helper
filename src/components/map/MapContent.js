@@ -236,13 +236,14 @@ const MapContent = ({
   }, [displayPlaces]);
 
   // Render markers with extensive null checking
-  const placeMarkers = useMemo(() => {
+  const renderMarkers = () => {
     if (mapError || !Array.isArray(displayPlaces) || displayPlaces.length === 0) {
       console.log('No markers to render: mapError or empty displayPlaces');
       return null;
     }
     
     try {
+      // Return an array of valid markers
       return displayPlaces.map((place, index) => {
         if (!place || !place.location) {
           console.warn('Invalid place skipped in marker rendering');
@@ -280,12 +281,12 @@ const MapContent = ({
             </Callout>
           </Marker>
         );
-      });
+      }).filter(Boolean); // Filter out null markers
     } catch (error) {
       console.error('Error rendering markers:', error);
       return null;
     }
-  }, [displayPlaces, mapError, navigation, markerKey]);
+  };
 
   if (mapError) {
     return (
@@ -331,7 +332,7 @@ const MapContent = ({
         legalLabelInsets={{ bottom: -100, right: -100 }}
         attributionEnabled={false}
       >
-        {placeMarkers}
+        {renderMarkers()}
       </MapView>
     </View>
   );
