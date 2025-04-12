@@ -13,8 +13,7 @@ const DEFAULT_LOCATION = {
 };
 
 export const useLocationPermission = () => {
-  // Always initialize with default values
-  const [userLocation, setUserLocation] = useState(DEFAULT_LOCATION);
+  const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [permissionStatus, setPermissionStatus] = useState('unknown');
   const { t } = useTranslation();
@@ -35,6 +34,8 @@ export const useLocationPermission = () => {
         if (status !== 'granted') {
           console.log('Permission to access location was denied');
           setLocationError('permission_denied');
+          // Fall back to default location
+          setUserLocation(DEFAULT_LOCATION);
           
           // On iOS, show a more user-friendly message
           if (Platform.OS === 'ios') {
@@ -50,10 +51,11 @@ export const useLocationPermission = () => {
           return;
         }
 
-        // Get location with high accuracy on Android, but lower on iOS for better battery performance
-        const options = Platform.OS === 'ios' 
-          ? { accuracy: Location.Accuracy.Balanced } 
-          : { accuracy: Location.Accuracy.High };
+        // Get location with appropriate accuracy for the platform
+        const options = Platform.select({
+          ios: { accuracy: Location.Accuracy.Balanced },
+          android: { accuracy: Location.Accuracy.High }
+        });
         
         console.log('Getting current position with options:', options);
         const location = await Location.getCurrentPositionAsync(options);
@@ -73,6 +75,8 @@ export const useLocationPermission = () => {
         console.error('Error getting location:', error);
         if (isMounted) {
           setLocationError('location_error');
+          // Fall back to default location
+          setUserLocation(DEFAULT_LOCATION);
         }
         
         if (Platform.OS === 'ios' && error.message?.includes('denied')) {
@@ -97,7 +101,7 @@ export const useLocationPermission = () => {
   }, [t]);
 
   return { 
-    userLocation, 
+    userLocation: userLocation || DEFAULT_LOCATION, 
     locationError, 
     permissionStatus 
   };

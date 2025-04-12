@@ -17,61 +17,72 @@ const LocationStep = ({ formData, setFormData }) => {
   const [mapRegion, setMapRegion] = useState(null);
   const { userLocation } = useLocationPermission();
 
+  // Initialize from existing formData or user location
   useEffect(() => {
-    // Initialize from existing formData or user location
-    if (formData.location && formData.location.latitude && formData.location.longitude) {
-      setMapRegion({
-        latitude: parseFloat(formData.location.latitude),
-        longitude: parseFloat(formData.location.longitude),
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
-    } else if (userLocation && userLocation.latitude && userLocation.longitude) {
-      const region = {
-        latitude: parseFloat(userLocation.latitude),
-        longitude: parseFloat(userLocation.longitude),
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
-      setMapRegion(region);
-      // Update formData with user location
-      setFormData({
-        ...formData,
-        location: {
-          ...formData.location,
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-        }
-      });
+    // Case 1: Use existing form data if available
+    if (formData.location?.latitude && formData.location?.longitude) {
+      const lat = parseFloat(formData.location.latitude);
+      const lng = parseFloat(formData.location.longitude);
+      
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setMapRegion({
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
+        return;
+      }
     }
-  }, [userLocation]);
+    
+    // Case 2: Fall back to user location
+    if (userLocation?.latitude && userLocation?.longitude) {
+      setMapRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+      
+      // Update form data with user location if no location is set
+      if (!formData.location?.latitude || !formData.location?.longitude) {
+        setFormData({
+          ...formData,
+          location: {
+            ...formData.location,
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+          }
+        });
+      }
+    }
+  }, [userLocation, formData.location]);
 
+  // Update form data when location fields change
   const handleLocationChange = (field, value) => {
     setFormData({
       ...formData,
       location: {
-        ...formData.location,
+        ...formData.location || {},
         [field]: value
       }
     });
   };
 
+  // Handle map press to set marker
   const handleMapPress = (event) => {
     const { coordinate } = event.nativeEvent;
+    
+    // Update map region
     setMapRegion({
       ...mapRegion,
       latitude: coordinate.latitude,
       longitude: coordinate.longitude,
     });
     
-    setFormData({
-      ...formData,
-      location: {
-        ...formData.location,
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-      }
-    });
+    // Update form data
+    handleLocationChange('latitude', coordinate.latitude);
+    handleLocationChange('longitude', coordinate.longitude);
   };
 
   // Get marker coordinate safely
@@ -106,6 +117,7 @@ const LocationStep = ({ formData, setFormData }) => {
             style={styles.map}
             region={mapRegion}
             onPress={handleMapPress}
+            provider={Platform.OS === 'android' ? 'google' : null}
           >
             {getMarkerCoordinate() && (
               <Marker

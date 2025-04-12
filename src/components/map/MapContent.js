@@ -21,15 +21,6 @@ const MapContent = ({
   const [mapError, setMapError] = useState(false);
   const [displayMarkers, setDisplayMarkers] = useState([]);
 
-  // Debug logs
-  console.log('MapContent render with:', { 
-    hasMapRef: !!mapRef, 
-    initialRegion, 
-    userLocation,
-    filteredPlacesCount: filteredPlaces?.length,
-    searchResultsCount: searchResults?.length
-  });
-
   // Create a valid initial region with fallback values
   const getValidRegion = useCallback(() => {
     const defaultRegion = {
@@ -39,7 +30,6 @@ const MapContent = ({
       longitudeDelta: 0.0421,
     };
     
-    // If initial region is missing or invalid, return default
     if (!initialRegion || typeof initialRegion !== 'object') {
       return defaultRegion;
     }
@@ -54,7 +44,6 @@ const MapContent = ({
       return defaultRegion;
     }
     
-    // Return validated region
     return {
       latitude: lat,
       longitude: lng,
@@ -63,81 +52,59 @@ const MapContent = ({
     };
   }, [initialRegion]);
 
-  // Process and validate places data
+  // Safely process and validate place data for markers
+  const createValidMarkers = useCallback((placesArray) => {
+    if (!Array.isArray(placesArray) || placesArray.length === 0) {
+      return [];
+    }
+
+    return placesArray
+      .filter(place => {
+        // Basic validation
+        if (!place || typeof place !== 'object') return false;
+        
+        // Must have location data
+        if (!place.location || typeof place.location !== 'object') return false;
+        
+        // Location must have valid coordinates
+        const lat = parseFloat(place.location.latitude);
+        const lng = parseFloat(place.location.longitude);
+        return !isNaN(lat) && !isNaN(lng);
+      })
+      .map((place, index) => {
+        // Create a safe marker object
+        const id = place.id || `place-${index}`;
+        const lat = parseFloat(place.location.latitude);
+        const lng = parseFloat(place.location.longitude);
+        
+        return {
+          id: id,
+          key: `marker-${id}-${Date.now()}-${index}`,
+          name: place.name || 'Unnamed Place',
+          description: place.description || '',
+          type: place.type || 'location',
+          coordinate: {
+            latitude: lat,
+            longitude: lng,
+          },
+          // Safely copy other properties
+          ...place,
+        };
+      });
+  }, []);
+
+  // Process places data for markers
   useEffect(() => {
     try {
-      // Determine which array to use (search results or filtered places)
-      const placesArray = searchResults?.length > 0 ? 
-        (Array.isArray(searchResults) ? searchResults : []) : 
-        (Array.isArray(filteredPlaces) ? filteredPlaces : []);
-      
-      if (placesArray.length === 0) {
-        console.log('No places to display');
-        setDisplayMarkers([]);
-        return;
-      }
-      
-      // Process and validate each place
-      const validMarkers = placesArray
-        .filter(place => {
-          if (!place || typeof place !== 'object') {
-            console.warn('Invalid place object filtered out');
-            return false;
-          }
-          
-          const hasLocation = place.location && typeof place.location === 'object';
-          if (!hasLocation) {
-            console.warn('Place missing location data filtered out');
-            return false;
-          }
-          
-          const lat = parseFloat(place.location.latitude);
-          const lng = parseFloat(place.location.longitude);
-          
-          if (isNaN(lat) || isNaN(lng)) {
-            console.warn('Place has invalid coordinates filtered out');
-            return false;
-          }
-          
-          return true;
-        })
-        .map((place, index) => {
-          // Create a safe marker object with all required properties
-          const placeId = place.id || `place-${index}-${Date.now()}`;
-          
-          return {
-            id: placeId,
-            key: `marker-${placeId}-${Date.now()}`,
-            name: place.name || 'Unnamed Place',
-            description: place.description || '',
-            type: place.type || 'location',
-            coordinate: {
-              latitude: parseFloat(place.location.latitude),
-              longitude: parseFloat(place.location.longitude),
-            },
-            location: {
-              ...place.location,
-              latitude: parseFloat(place.location.latitude),
-              longitude: parseFloat(place.location.longitude),
-              city: place.location.city || '',
-              address: place.location.address || '',
-            },
-            // Pass through any other properties
-            ...place,
-          };
-        });
-      
-      console.log(`Processed ${validMarkers.length} valid markers`);
-      if (validMarkers.length > 0) {
-        console.log('Sample marker:', JSON.stringify(validMarkers[0]));
-      }
-      
-      setDisplayMarkers(validMarkers);
+      // Determine which array to use
+      const sourcePlaces = searchResults?.length > 0 ? searchResults : filteredPlaces;
+      const markers = createValidMarkers(sourcePlaces);
+      setDisplayMarkers(markers);
     } catch (error) {
       console.error('Error processing places for markers:', error);
       setDisplayMarkers([]);
     }
-  }, [filteredPlaces, searchResults]);
+  }, [filteredPlaces, searchResults, createValidMarkers]);
 
   // Handle user location
   useEffect(() => {
@@ -149,14 +116,12 @@ const MapContent = ({
       const lng = Number(userLocation.longitude);
       
       if (!isNaN(lat) && !isNaN(lng)) {
-        const validRegion = {
+        mapRef.current.animateToRegion({
           latitude: lat,
           longitude: lng,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
-        };
-        
-        mapRef.current.animateToRegion(validRegion, 1000);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error animating to user location:', error);
@@ -169,8 +134,9 @@ const MapContent = ({
     
     try {
       if (searchResults.length === 1) {
+        // Focus on single result
         const place = searchResults[0];
-        if (place && place.location) {
+        if (place?.location) {
           const lat = parseFloat(place.location.latitude);
           const lng = parseFloat(place.location.longitude);
           
@@ -184,8 +150,9 @@ const MapContent = ({
           }
         }
       } else {
-        const validCoordinates = searchResults
-          .filter(place => place && place.location)
+        // Handle multiple results
+        const coordinates = searchResults
+          .filter(place => place?.location)
           .map(place => {
             const lat = parseFloat(place.location.latitude);
             const lng = parseFloat(place.location.longitude);
@@ -193,28 +160,22 @@ const MapContent = ({
           })
           .filter(Boolean);
           
-        if (validCoordinates.length > 0) {
-          mapRef.current.fitToCoordinates(validCoordinates, {
+        if (coordinates.length > 0) {
+          mapRef.current.fitToCoordinates(coordinates, {
             edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
             animated: true,
           });
         }
       }
     } catch (error) {
-      console.error('Error focusing map on search results:', error);
+      console.error('Error focusing on search results:', error);
     }
   }, [searchResults, mapError]);
 
   // Navigate to place details
   const handlePlacePress = (place) => {
-    try {
-      if (place && place.id) {
-        navigation.navigate(ROUTES.PLACE_DETAILS, { placeId: place.id });
-      } else {
-        console.warn('Cannot navigate: invalid place or missing ID');
-      }
-    } catch (error) {
-      console.error('Error navigating to place details:', error);
+    if (place?.id) {
+      navigation.navigate(ROUTES.PLACE_DETAILS, { placeId: place.id });
     }
   };
 
@@ -235,7 +196,7 @@ const MapContent = ({
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={null}
+        provider={Platform.OS === 'android' ? 'google' : null}
         initialRegion={getValidRegion()}
         showsUserLocation
         showsMyLocationButton
@@ -256,15 +217,10 @@ const MapContent = ({
           setMapError(true);
         }}
         mapType="standard"
-        showsPointsOfInterest={false}
-        showsBuildings={false}
-        showsTraffic={false}
-        showsIndoors={false}
       >
-        {displayMarkers.map((marker) => (
+        {displayMarkers.length > 0 && displayMarkers.map((marker) => (
           <Marker
             key={marker.key}
-            identifier={`marker-${marker.id}`}
             coordinate={marker.coordinate}
             pinColor={COLORS.primary}
             onPress={() => handlePlacePress(marker)}

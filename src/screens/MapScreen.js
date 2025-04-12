@@ -43,13 +43,9 @@ const MapScreen = ({ navigation }) => {
   // Fetch places data
   const { places, isLoading, error, fetchPlaces } = usePlacesData();
   
-  // Make sure we have a valid region, falling back to initialRegion if userLocation is null
-  const currentRegion = userLocation || mapRegion || initialRegion;
-  
   // Update map region when user location changes
   useEffect(() => {
     if (userLocation && userLocation.latitude && userLocation.longitude) {
-      console.log('Setting map region from user location:', userLocation);
       setMapRegion({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
@@ -73,8 +69,8 @@ const MapScreen = ({ navigation }) => {
     
     setIsSearching(true);
     try {
-      const results = await searchPlaces(query);
-      setSearchResults(results || []);
+      const results = await searchPlaces(query, userLocation);
+      setSearchResults(Array.isArray(results) ? results : []);
     } catch (error) {
       console.error('Error searching places:', error);
       Alert.alert('Erreur', 'Impossible de rechercher les lieux.');
@@ -102,32 +98,19 @@ const MapScreen = ({ navigation }) => {
     if (!places || !Array.isArray(places)) {
       return [];
     }
-
-    // Filter by type if a filter is active
     return filterType 
       ? places.filter(place => place.type === filterType) 
       : places;
-      
   }, [places, filterType]);
 
-  // Handle location errors
-  useEffect(() => {
-    if (locationError) {
-      console.warn('Location error:', locationError);
-    }
-  }, [locationError]);
-
-  // Retry fetching places
-  const retryFetchPlaces = () => {
-    fetchPlaces();
-  };
-
+  // Display loading state
   if (isLoading) {
     return <LoadingState />;
   }
 
+  // Display error state
   if (error) {
-    return <ErrorState error={error} onRetry={retryFetchPlaces} />;
+    return <ErrorState error={error} onRetry={fetchPlaces} />;
   }
 
   return (
@@ -164,7 +147,7 @@ const MapScreen = ({ navigation }) => {
           />
           <MapContent 
             mapRef={mapRef}
-            initialRegion={currentRegion}
+            initialRegion={mapRegion}
             userLocation={userLocation}
             filteredPlaces={filteredPlaces}
             searchResults={searchResults}
