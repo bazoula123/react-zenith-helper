@@ -239,7 +239,7 @@ const MapContent = ({
   const placeMarkers = useMemo(() => {
     if (mapError || !Array.isArray(displayPlaces) || displayPlaces.length === 0) {
       console.log('No markers to render: mapError or empty displayPlaces');
-      return [];
+      return null;
     }
     
     try {
@@ -280,10 +280,10 @@ const MapContent = ({
             </Callout>
           </Marker>
         );
-      }).filter(Boolean); // Filter out null markers
+      });
     } catch (error) {
       console.error('Error rendering markers:', error);
-      return [];
+      return null;
     }
   }, [displayPlaces, mapError, navigation, markerKey]);
 
@@ -370,4 +370,3 @@ const styles = StyleSheet.create({
 });
 
 export default MapContent;
-
