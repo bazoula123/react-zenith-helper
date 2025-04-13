@@ -1,3 +1,4 @@
+
 /**
  * api.ts
  * 
@@ -58,15 +59,12 @@ export interface Property {
   meeting_rooms?: number;
   rating: number;
   status: 'available' | 'booked' | 'maintenance';
-  image_url: string;
+  image_url: string; // Updated to match API response
   property_type: 'residential' | 'office';
   owner_id?: string;
   created_at?: string;
   updated_at?: string;
-}
-
-export interface PropertyAmenities {
-  property_id: string;
+  // Office property amenities
   wifi?: boolean;
   parking?: boolean;
   coffee?: boolean;
@@ -255,7 +253,8 @@ export const propertyApi = {
     const response = await fetch(`${API_BASE_URL}/properties`, {
       credentials: 'include',
     });
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    return result.data || [];
   },
 
   // Get property by ID
@@ -263,16 +262,18 @@ export const propertyApi = {
     const response = await fetch(`${API_BASE_URL}/properties/${id}`, {
       credentials: 'include',
     });
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    return result.data;
   },
 
   // Create a new property with image upload
-  createProperty: async (propertyData: PropertyCreate, imageFile: File): Promise<Property> => {
+  createProperty: async (propertyData: PropertyCreate, imageFile: File): Promise<{id: string, image_url: string}> => {
     const formData = new FormData();
     
     // Add all property data to formData
     Object.entries(propertyData).forEach(([key, value]) => {
       if (value !== undefined) {
+        // Convert boolean values to strings for FormData
         formData.append(key, value.toString());
       }
     });
@@ -287,16 +288,18 @@ export const propertyApi = {
       // Note: Don't set Content-Type header when using FormData - browser will set it
     });
     
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    return result.data;
   },
 
   // Update property with optional image upload
-  updateProperty: async (id: string, propertyData: PropertyUpdate, imageFile?: File): Promise<Property> => {
+  updateProperty: async (id: string, propertyData: PropertyUpdate, imageFile?: File): Promise<{image_url?: string}> => {
     const formData = new FormData();
     
     // Add all property data to formData
     Object.entries(propertyData).forEach(([key, value]) => {
       if (value !== undefined) {
+        // Convert boolean values to strings for FormData
         formData.append(key, value.toString());
       }
     });
@@ -313,7 +316,8 @@ export const propertyApi = {
       // Note: Don't set Content-Type header when using FormData - browser will set it
     });
     
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    return result.data || {};
   },
 
   // Delete property
@@ -328,5 +332,50 @@ export const propertyApi = {
   // Update property status
   updatePropertyStatus: async (id: string, status: 'available' | 'booked' | 'maintenance') => {
     return propertyApi.updateProperty(id, { status });
+  },
+  
+  // Helper function to map API response to PropertyData
+  mapApiPropertyToOfficePropertyData: (property: Property): import('@/components/OfficePropertyCard').OfficePropertyData => {
+    return {
+      id: property.id,
+      title: property.title,
+      address: property.address,
+      price: Number(property.price),
+      type: property.type,
+      workstations: property.workstations || 0,
+      meetingRooms: property.meeting_rooms || 0,
+      area: Number(property.area) || 0,
+      rating: Number(property.rating),
+      status: property.status,
+      imageUrl: property.image_url,
+      amenities: {
+        wifi: property.wifi || false,
+        parking: property.parking || false,
+        coffee: property.coffee || false,
+        reception: property.reception || false,
+        secured: property.secured || false,
+        accessible: property.accessible || false,
+        printers: property.printers || false,
+        kitchen: property.kitchen || false
+      },
+      flexibleHours: property.flexible_hours || false
+    };
+  },
+  
+  // Helper function to map API response to PropertyData
+  mapApiPropertyToPropertyData: (property: Property): import('@/components/PropertyCard').PropertyData => {
+    return {
+      id: property.id,
+      title: property.title,
+      address: property.address,
+      price: Number(property.price),
+      type: property.type,
+      bedrooms: property.bedrooms || 0,
+      bathrooms: Number(property.bathrooms) || 0,
+      area: Number(property.area) || 0,
+      rating: Number(property.rating),
+      status: property.status,
+      imageUrl: property.image_url
+    };
   }
 };

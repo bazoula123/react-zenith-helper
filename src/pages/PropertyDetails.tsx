@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
@@ -8,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Building2, ArrowLeft, MapPin, Star, Bed, Bath, Square, 
   Edit, Trash, Heart, Share, ClipboardCheck, Settings, CalendarDays, BarChart3,
-  AlertTriangle, Users, History, User
+  AlertTriangle, Users, History, User, Loader2
 } from 'lucide-react';
 import { PropertyData } from '@/components/PropertyCard';
+import { OfficePropertyData } from '@/components/OfficePropertyCard';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,143 +24,84 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
+import { propertyApi, Property } from '@/services/api';
 
-/**
- * Données fictives des propriétés avec informations sur le propriétaire
- * Ces données simulent ce que nous récupérerions d'une API
- */
-const mockPropertiesData: (PropertyData & { owner: string })[] = [
-  {
-    id: 'prop1',
-    title: 'Villa de Luxe Front de Mer',
-    address: '123 Ocean Drive, Miami, FL',
-    price: 350,
-    type: 'Villa',
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 2800,
-    rating: 4.9,
-    status: 'available',
-    imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Pierre (proprietaire@example.com)'
-  },
-  {
-    id: 'prop2',
-    title: 'Appartement Moderne Centre-Ville',
-    address: '456 Main St, Seattle, WA',
-    price: 180,
-    type: 'Appartement',
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 1200,
-    rating: 4.7,
-    status: 'booked',
-    imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Marie (marie@example.com)'
-  },
-  {
-    id: 'prop3',
-    title: 'Chalet Confortable en Montagne',
-    address: '789 Pine Rd, Aspen, CO',
-    price: 250,
-    type: 'Chalet',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 1800,
-    rating: 4.8,
-    status: 'maintenance',
-    imageUrl: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Jean (jean@example.com)'
-  },
-  {
-    id: 'prop4',
-    title: 'Loft Urbain Stylé',
-    address: '101 Arts District, Portland, OR',
-    price: 195,
-    type: 'Loft',
-    bedrooms: 1,
-    bathrooms: 1,
-    area: 950,
-    rating: 4.6,
-    status: 'available',
-    imageUrl: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Pierre (proprietaire@example.com)'
-  },
-  {
-    id: 'prop5',
-    title: 'Cottage au Bord du Lac',
-    address: '42 Lake View Rd, Lake Tahoe, NV',
-    price: 280,
-    type: 'Cottage',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 1600,
-    rating: 4.9,
-    status: 'booked',
-    imageUrl: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Sophie (sophie@example.com)'
-  },
-  {
-    id: 'prop6',
-    title: 'Maison Historique en Ville',
-    address: '567 Park Ave, New York, NY',
-    price: 400,
-    type: 'Maison de ville',
-    bedrooms: 3,
-    bathrooms: 2.5,
-    area: 2200,
-    rating: 4.7,
-    status: 'available',
-    imageUrl: 'https://images.unsplash.com/photo-1581577124372-9b0bc4b9a848?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    owner: 'Lucas (lucas@example.com)'
-  }
-];
-
-/**
- * Composant détaillé pour une propriété individuelle
- * 
- * Affiche toutes les informations détaillées d'une propriété sélectionnée:
- * - Informations générales (titre, type, adresse)
- * - Caractéristiques (chambres, salles de bain, surface)
- * - Statut et actions disponibles selon le rôle de l'utilisateur
- * - Statistiques d'occupation et de popularité
- */
 const PropertyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, canEdit, canDelete } = useAuth();
-  const [property, setProperty] = useState<(PropertyData & { owner: string }) | null>(null);
+  const [property, setProperty] = useState<PropertyData | OfficePropertyData | null>(null);
+  const [propertyType, setPropertyType] = useState<'residential' | 'office' | null>(null);
   const [activeTab, setActiveTab] = useState('details');
   const [isFavorited, setIsFavorited] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [owner, setOwner] = useState<string | null>(null);
 
-  // Récupération des données de la propriété au chargement du composant
   useEffect(() => {
-    const foundProperty = mockPropertiesData.find(p => p.id === id);
-    if (foundProperty) {
-      setProperty(foundProperty);
-    } else {
-      toast({
-        title: "Propriété Non Trouvée",
-        description: "La propriété que vous recherchez n'existe pas ou a été supprimée.",
-        variant: "destructive",
-      });
-      navigate('/properties');
-    }
+    const fetchPropertyDetails = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const apiProperty = await propertyApi.getPropertyById(id);
+        
+        if (apiProperty.property_type === 'office') {
+          const officeProperty = propertyApi.mapApiPropertyToOfficePropertyData(apiProperty);
+          setProperty(officeProperty);
+          setPropertyType('office');
+        } else {
+          const residentialProperty = propertyApi.mapApiPropertyToPropertyData(apiProperty);
+          setProperty(residentialProperty);
+          setPropertyType('residential');
+        }
+        
+        setOwner(`Propriétaire (${apiProperty.owner_id || 'unknown@example.com'})`);
+        
+      } catch (error) {
+        console.error('Error fetching property details:', error);
+        toast({
+          title: "Propriété Non Trouvée",
+          description: "La propriété que vous recherchez n'existe pas ou a été supprimée.",
+          variant: "destructive",
+        });
+        navigate('/properties');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPropertyDetails();
   }, [id, navigate, toast]);
 
-  // Affichage d'un indicateur de chargement si les données ne sont pas encore disponibles
-  if (!property) {
+  if (loading) {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+          <Loader2 className="h-16 w-16 animate-spin text-primary" />
         </div>
       </Layout>
     );
   }
 
-  // Configuration des couleurs pour les différents statuts de propriété
+  if (!property) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center h-64">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="mt-4 text-xl font-medium">Propriété non trouvée</h2>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => navigate('/properties')}
+          >
+            Retour aux propriétés
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
   const statusColors = {
     available: { bg: 'bg-green-100', text: 'text-green-700', label: 'Disponible' },
     booked: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Réservé' },
@@ -169,7 +110,6 @@ const PropertyDetails = () => {
 
   const statusStyle = statusColors[property.status];
 
-  // Gestion des actions sur la propriété
   const handleFavorite = () => {
     setIsFavorited(!isFavorited);
     toast({
@@ -195,25 +135,55 @@ const PropertyDetails = () => {
     });
   };
 
-  const handleDelete = () => {
-    toast({
-      title: "Supprimer la Propriété",
-      description: `La propriété: ${property.title} a été supprimée.`,
-      variant: "destructive",
-    });
-    navigate('/properties');
+  const handleDelete = async () => {
+    try {
+      await propertyApi.deleteProperty(property.id);
+      toast({
+        title: "Supprimer la Propriété",
+        description: `La propriété: ${property.title} a été supprimée.`,
+      });
+      navigate('/properties');
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      toast({
+        title: "Erreur de Suppression",
+        description: `Impossible de supprimer la propriété: ${property.title}`,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleStatusChange = (newStatus: 'available' | 'booked' | 'maintenance') => {
-    toast({
-      title: "Statut Mis à Jour",
-      description: `Statut de la propriété modifié en: ${statusColors[newStatus].label}`,
-    });
+  const handleStatusChange = async (newStatus: 'available' | 'booked' | 'maintenance') => {
+    try {
+      await propertyApi.updatePropertyStatus(property.id, newStatus);
+      
+      setProperty(prev => {
+        if (prev) {
+          return { ...prev, status: newStatus };
+        }
+        return prev;
+      });
+      
+      toast({
+        title: "Statut Mis à Jour",
+        description: `Statut de la propriété modifié en: ${statusColors[newStatus].label}`,
+      });
+    } catch (error) {
+      console.error('Error updating property status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut de la propriété",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Vérification du rôle de l'utilisateur pour l'affichage des contrôles
   const isAdmin = user?.role === 'admin';
-  const isProprietaire = user?.role === 'owner'; // Correction de l'erreur: 'proprietaire' -> 'owner'
+  const isProprietaire = user?.role === 'owner';
+
+  const isOfficeProperty = propertyType === 'office';
+  const officeProperty = isOfficeProperty ? property as OfficePropertyData : null;
+  const residentialProperty = !isOfficeProperty ? property as PropertyData : null;
 
   return (
     <Layout>
