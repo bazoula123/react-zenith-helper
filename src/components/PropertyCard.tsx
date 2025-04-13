@@ -61,11 +61,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Only navigate if the click wasn't on a button
-    if (!(e.target as HTMLElement).closest('button')) {
-      e.preventDefault(); // Prevent default behavior
-      console.log(`Navigating to: /properties/${property.id}`);
-      navigate(`/properties/${property.id}`);
+    if ((e.target as HTMLElement).closest('button')) {
+      e.stopPropagation();
+      return;
     }
+    
+    console.log(`Navigating to: /properties/${property.id}`);
+    navigate(`/properties/${property.id}`);
   };
 
   return (

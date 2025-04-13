@@ -1,5 +1,3 @@
-
-
 /**
  * OfficePropertyCard.tsx
  * 
@@ -118,7 +116,6 @@ export const OfficePropertyCard: React.FC<OfficePropertyCardProps> = ({
     }
     
     // Naviguer vers la page de détails avec l'ID de la propriété
-    e.preventDefault(); // Prévenir le comportement par défaut
     console.log(`Navigating to: /properties/${property.id}`);
     navigate(`/properties/${property.id}`);
   };
