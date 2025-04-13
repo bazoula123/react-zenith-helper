@@ -1,4 +1,3 @@
-
 /**
  * api.ts
  * 
@@ -43,6 +42,92 @@ export interface UserUpdate {
   email?: string;
   password?: string;
   role?: 'admin' | 'user' | 'owner';
+}
+
+// Property related interfaces
+export interface Property {
+  id: string;
+  title: string;
+  address: string;
+  price: number;
+  type: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  workstations?: number;
+  meeting_rooms?: number;
+  rating: number;
+  status: 'available' | 'booked' | 'maintenance';
+  image_url: string;
+  property_type: 'residential' | 'office';
+  owner_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PropertyAmenities {
+  property_id: string;
+  wifi?: boolean;
+  parking?: boolean;
+  coffee?: boolean;
+  reception?: boolean;
+  secured?: boolean;
+  accessible?: boolean;
+  printers?: boolean;
+  kitchen?: boolean;
+  flexible_hours?: boolean;
+}
+
+export interface PropertyCreate {
+  title: string;
+  address: string;
+  price: number;
+  type: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  workstations?: number;
+  meeting_rooms?: number;
+  rating: number;
+  status?: 'available' | 'booked' | 'maintenance';
+  property_type: 'residential' | 'office';
+  owner_id?: string;
+  // Amenities for office properties
+  wifi?: boolean;
+  parking?: boolean;
+  coffee?: boolean;
+  reception?: boolean;
+  secured?: boolean;
+  accessible?: boolean;
+  printers?: boolean;
+  kitchen?: boolean;
+  flexible_hours?: boolean;
+}
+
+export interface PropertyUpdate {
+  title?: string;
+  address?: string;
+  price?: number;
+  type?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  workstations?: number;
+  meeting_rooms?: number;
+  rating?: number;
+  status?: 'available' | 'booked' | 'maintenance';
+  property_type?: 'residential' | 'office';
+  owner_id?: string;
+  // Amenities for office properties
+  wifi?: boolean;
+  parking?: boolean;
+  coffee?: boolean;
+  reception?: boolean;
+  secured?: boolean;
+  accessible?: boolean;
+  printers?: boolean;
+  kitchen?: boolean;
+  flexible_hours?: boolean;
 }
 
 // API Error handling
@@ -161,4 +246,87 @@ export const userApi = {
     });
     return handleResponse(response);
   },
+};
+
+// API service for property operations
+export const propertyApi = {
+  // Get all properties
+  getAllProperties: async (): Promise<Property[]> => {
+    const response = await fetch(`${API_BASE_URL}/properties`, {
+      credentials: 'include',
+    });
+    return handleResponse(response);
+  },
+
+  // Get property by ID
+  getPropertyById: async (id: string): Promise<Property> => {
+    const response = await fetch(`${API_BASE_URL}/properties/${id}`, {
+      credentials: 'include',
+    });
+    return handleResponse(response);
+  },
+
+  // Create a new property with image upload
+  createProperty: async (propertyData: PropertyCreate, imageFile: File): Promise<Property> => {
+    const formData = new FormData();
+    
+    // Add all property data to formData
+    Object.entries(propertyData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Add image file
+    formData.append('image', imageFile);
+    
+    const response = await fetch(`${API_BASE_URL}/properties`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+      // Note: Don't set Content-Type header when using FormData - browser will set it
+    });
+    
+    return handleResponse(response);
+  },
+
+  // Update property with optional image upload
+  updateProperty: async (id: string, propertyData: PropertyUpdate, imageFile?: File): Promise<Property> => {
+    const formData = new FormData();
+    
+    // Add all property data to formData
+    Object.entries(propertyData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Add image file if provided
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/properties/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      body: formData,
+      // Note: Don't set Content-Type header when using FormData - browser will set it
+    });
+    
+    return handleResponse(response);
+  },
+
+  // Delete property
+  deleteProperty: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/properties/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return handleResponse(response);
+  },
+
+  // Update property status
+  updatePropertyStatus: async (id: string, status: 'available' | 'booked' | 'maintenance') => {
+    return propertyApi.updateProperty(id, { status });
+  }
 };
