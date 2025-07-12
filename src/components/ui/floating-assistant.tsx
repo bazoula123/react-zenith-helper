@@ -181,11 +181,13 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
-      setIsOpen(true);
+      if (!isMobile) {
+        setIsOpen(true);
+      }
       resetAutoCloseTimer();
     }, 4000);
     return () => clearTimeout(timer);
-  }, [resetAutoCloseTimer]);
+  }, [resetAutoCloseTimer, isMobile]);
 
   useEffect(() => {
     checkAgentStatus();
@@ -538,7 +540,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
 
   const handleInputFocus = () => {
     resetAutoCloseTimer();
-    if (isMobile) {
+    if (isMobile && !isMobileModalOpen) {
       setIsMobileModalOpen(true);
     }
   };
@@ -578,36 +580,52 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   if (!isVisible) return null;
 
   const ChatContent = () => (
-    <div className="bg-card border border-border rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm">
-      <div className="bg-gradient-to-r from-primary via-accent to-primary p-4 flex items-center justify-between relative overflow-hidden">
+    <div className={cn(
+      "bg-card border border-border rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm",
+      isMobile ? "h-full flex flex-col" : ""
+    )}>
+      <div className="bg-gradient-to-r from-primary via-accent to-primary p-3 md:p-4 flex items-center justify-between relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 animate-pulse"></div>
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center ring-2 ring-white/30">
-            <User className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2 md:gap-3 relative z-10">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center ring-2 ring-white/30">
+            <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
           <div>
-            <span className="text-white font-semibold block">{t('assistantName')}</span>
+            <span className="text-white font-semibold block text-sm md:text-base">{t('assistantName')}</span>
             <span className="text-white/80 text-xs">
               {isConnectedToAgent ? "Agent connecté" : t('onlineNow')}
             </span>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-white hover:bg-white/20 h-8 w-8 p-0 relative z-10">
-          <X className="w-4 h-4" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => {
+            setIsOpen(false);
+            if (isMobile) {
+              setIsMobileModalOpen(false);
+            }
+          }} 
+          className="text-white hover:bg-white/20 h-7 w-7 md:h-8 md:w-8 p-0 relative z-10"
+        >
+          <X className="w-3 h-3 md:w-4 md:h-4" />
         </Button>
       </div>
       
-      <div className="h-64 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/30">
+      <div className={cn(
+        "overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 bg-gradient-to-b from-background to-muted/30",
+        isMobile ? "flex-1 min-h-0" : "h-64 md:h-80"
+      )}>
         {messages.map((msg, index) => (
           <div key={index} className={cn("flex gap-2 items-start", msg.isUser ? "flex-row-reverse" : "flex-row")}>
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", 
+            <div className={cn("w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0", 
               msg.isUser ? "bg-primary text-primary-foreground" : 
               msg.isSystem ? "bg-green-500 text-white" :
               "bg-gradient-to-r from-accent to-primary text-white"
             )}>
-              {msg.isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+              {msg.isUser ? <User className="w-3 h-3 md:w-4 md:h-4" /> : <Bot className="w-3 h-3 md:w-4 md:h-4" />}
             </div>
-           <div className={cn("max-w-[75%] rounded-2xl text-sm shadow-sm", 
+           <div className={cn("max-w-[80%] md:max-w-[75%] rounded-2xl text-xs md:text-sm shadow-sm", 
              msg.isUser ? "bg-primary text-primary-foreground rounded-tr-sm" : 
              msg.isSystem ? "bg-green-50 text-green-800 border border-green-200 rounded-tl-sm" :
              "bg-white text-foreground border border-border rounded-tl-sm"
@@ -617,22 +635,22 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                    <img 
                      src={msg.imageUrl} 
                      alt={msg.imageName || t('imageShared')} 
-                     className="max-w-full max-h-48 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                     className="max-w-full max-h-32 md:max-h-48 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
                      onClick={() => window.open(msg.imageUrl, '_blank')}
                      loading="lazy"
                    />
                    {msg.text && <p className="mt-2 p-2">{msg.text}</p>}
                  </div>
                ) : msg.isProductSuggestion && msg.products ? (
-                 <div className="p-3">
-                   <p className="mb-3">{msg.text}</p>
+                 <div className="p-2 md:p-3">
+                   <p className="mb-2 md:mb-3">{msg.text}</p>
                    <div className="grid grid-cols-1 gap-2">
                      {msg.products.map((product: any) => (
                        <div key={product.id_product} className="flex gap-2 items-center p-2 border rounded-lg hover:bg-muted/50 transition-colors">
                          <img 
                            src={`https://draminesaid.com/lucci/${product.img_product}`}
                            alt={product.nom_product}
-                           className="w-12 h-12 object-cover rounded"
+                           className="w-10 h-10 md:w-12 md:h-12 object-cover rounded"
                          />
                          <div className="flex-1 min-w-0">
                            <p className="text-xs font-medium truncate">{product.nom_product}</p>
@@ -651,7 +669,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                    </div>
                  </div>
                ) : (
-                 <div className="p-3">{msg.text}</div>
+                 <div className="p-2 md:p-3">{msg.text}</div>
                )}
              </div>
           </div>
@@ -667,10 +685,10 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
 
         {agentTyping && (
           <div className="flex gap-2 items-start">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-r from-accent to-primary text-white">
-              <Bot className="w-4 h-4" />
+            <div className="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-r from-accent to-primary text-white">
+              <Bot className="w-3 h-3 md:w-4 md:h-4" />
             </div>
-            <div className="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 shadow-sm">
+            <div className="bg-white border rounded-2xl rounded-tl-sm px-3 md:px-4 py-2 shadow-sm">
               <div className="flex gap-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
@@ -684,8 +702,8 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       </div>
       
       {showContactForm && (
-        <div className="p-4 border-t border-border bg-muted/50">
-          <div className="space-y-3">
+        <div className="p-3 md:p-4 border-t border-border bg-muted/50">
+          <div className="space-y-2 md:space-y-3">
             <div>
               <Label htmlFor="name" className="text-xs font-medium">{t('form.fullName')}</Label>
               <Input
@@ -693,7 +711,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 value={contactForm.name}
                 onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
                 placeholder={t('form.fullNamePlaceholder')}
-                className="mt-1 h-8 text-xs"
+                className="mt-1 h-8 md:h-9 text-xs md:text-sm"
               />
             </div>
             <div>
@@ -704,7 +722,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 value={contactForm.email}
                 onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
                 placeholder={t('form.emailPlaceholder')}
-                className="mt-1 h-8 text-xs"
+                className="mt-1 h-8 md:h-9 text-xs md:text-sm"
               />
             </div>
             <div>
@@ -714,12 +732,12 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 value={contactForm.phone}
                 onChange={(e) => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
                 placeholder={t('form.phonePlaceholder')}
-                className="mt-1 h-8 text-xs"
+                className="mt-1 h-8 md:h-9 text-xs md:text-sm"
               />
             </div>
             <Button 
               onClick={handleContactSubmit} 
-              className="w-full h-8 text-xs bg-gradient-to-r from-primary to-accent"
+              className="w-full h-8 md:h-9 text-xs md:text-sm bg-gradient-to-r from-primary to-accent"
               disabled={!contactForm.name || !contactForm.email || !contactForm.phone}
             >
               {t('form.send')}
@@ -729,9 +747,9 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       )}
 
       {showPredefinedQuestions && !isConnectedToAgent && !waitingForAgent && (
-        <div className="p-3 border-t border-border bg-muted/30">
+        <div className="p-2 md:p-3 border-t border-border bg-muted/30">
           <p className="text-xs font-medium text-muted-foreground mb-2">{t('frequentQuestions')}</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {predefinedQuestions.map((question) => (
               <Button
                 key={question.id}
@@ -749,7 +767,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
               onClick={handleTalkToAgent}
               variant="default"
               size="sm"
-              className="h-auto p-2 text-xs bg-primary hover:bg-primary/90 flex flex-col items-start text-left col-span-2"
+              className="h-auto p-2 text-xs bg-primary hover:bg-primary/90 flex flex-col items-start text-left col-span-1 sm:col-span-2"
             >
               <div className="font-medium text-xs w-full">👨‍💼 Parler à un conseiller</div>
               <div className="text-primary-foreground/80 text-xs mt-1 w-full">Contact direct avec notre équipe</div>
@@ -758,7 +776,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
         </div>
       )}
       
-      <div className="p-3 border-t border-border bg-background/95 backdrop-blur-sm">
+      <div className="p-2 md:p-3 border-t border-border bg-background/95 backdrop-blur-sm">
         <div className="flex items-end gap-2">
           <input
             type="file"
@@ -773,12 +791,12 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingImage}
-            className="rounded-full w-9 h-9 p-0 hover:bg-accent/50 flex-shrink-0"
+            className="rounded-full w-8 h-8 md:w-9 md:h-9 p-0 hover:bg-accent/50 flex-shrink-0"
           >
             {uploadingImage ? (
-              <div className="w-4 h-4 animate-spin border-2 border-primary border-t-transparent rounded-full" />
+              <div className="w-3 h-3 md:w-4 md:h-4 animate-spin border-2 border-primary border-t-transparent rounded-full" />
             ) : (
-              <Camera className="w-4 h-4 text-accent" />
+              <Camera className="w-3 h-3 md:w-4 md:h-4 text-accent" />
             )}
           </Button>
           <div className="flex-1 min-w-0 relative">
@@ -789,9 +807,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 setMessage(e.target.value);
                 resetAutoCloseTimer();
               }}
-              onFocus={() => {
-                handleInputFocus();
-              }} 
+              onFocus={handleInputFocus} 
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -800,16 +816,19 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
               }}
               placeholder={t('writeMessage')} 
               rows={1}
-              className="min-h-[42px] max-h-[120px] resize-none bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground px-4 py-2.5 text-sm" 
+              className={cn(
+                "min-h-[36px] md:min-h-[42px] max-h-[100px] md:max-h-[120px] resize-none bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground text-xs md:text-sm",
+                isMobile ? "px-3 py-2" : "px-4 py-2.5"
+              )} 
             />
           </div>
           <Button 
             onClick={handleSendMessage} 
             disabled={!message.trim()}
             size="sm" 
-            className="rounded-full w-9 h-9 p-0 bg-primary hover:bg-primary/90 shadow-md transition-all disabled:opacity-50"
+            className="rounded-full w-8 h-8 md:w-9 md:h-9 p-0 bg-primary hover:bg-primary/90 shadow-md transition-all disabled:opacity-50"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3 h-3 md:w-4 md:h-4" />
           </Button>
         </div>
       </div>
@@ -819,32 +838,32 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   if (isMobile) {
     return (
       <>
-        {!isMobileModalOpen && (
-          <div className="fixed bottom-6 right-6 z-50">
-            <div className="relative">
-              {showTooltip && (
-                <div className="absolute bottom-16 right-0 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2">
-                  {t('tooltip')}
-                  <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                </div>
-              )}
-              <Button
-                onClick={() => {
-                  setIsMobileModalOpen(true);
-                  setShowTooltip(false);
-                }}
-                size="lg"
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20"
-              >
-                <MessageCircle className="w-6 h-6" />
-              </Button>
-            </div>
+        {/* Always visible floating button on mobile */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="relative">
+            {showTooltip && !isMobileModalOpen && (
+              <div className="absolute bottom-16 right-0 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 max-w-[200px]">
+                {t('tooltip')}
+                <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            )}
+            <Button
+              onClick={() => {
+                setIsMobileModalOpen(true);
+                setShowTooltip(false);
+              }}
+              size="lg"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20"
+            >
+              <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+            </Button>
           </div>
-        )}
+        </div>
 
+        {/* Full screen modal on mobile */}
         <Dialog open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen}>
-          <DialogContent className="w-full h-full max-w-none p-0 m-0 rounded-none">
-            <div className="h-full flex flex-col">
+          <DialogContent className="w-full h-full max-w-none max-h-none p-0 m-0 rounded-none border-0">
+            <div className="h-full w-full">
               <ChatContent />
             </div>
           </DialogContent>
@@ -857,7 +876,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     <div className="fixed bottom-6 right-6 z-50">
       <div className="relative">
         {isOpen ? (
-          <div className="w-80 h-[500px]">
+          <div className="w-80 lg:w-96 h-[500px] lg:h-[600px]">
             <ChatContent />
           </div>
         ) : (
