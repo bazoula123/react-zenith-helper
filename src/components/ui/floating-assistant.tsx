@@ -540,9 +540,17 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
 
   const handleInputFocus = () => {
     resetAutoCloseTimer();
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
     if (isMobile && !isMobileModalOpen) {
       setIsMobileModalOpen(true);
     }
+  };
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleInputFocus();
   };
 
   const handleAgentConnection = () => {
@@ -807,7 +815,9 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 setMessage(e.target.value);
                 resetAutoCloseTimer();
               }}
-              onFocus={handleInputFocus} 
+              onFocus={handleInputFocus}
+              onClick={handleInputClick}
+              onTouchStart={handleInputClick}
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -816,9 +826,15 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
               }}
               placeholder={t('writeMessage')} 
               rows={1}
+              style={{ 
+                minHeight: isMobile ? '36px' : '42px',
+                maxHeight: isMobile ? '100px' : '120px',
+                pointerEvents: 'auto',
+                touchAction: 'manipulation'
+              }}
               className={cn(
-                "min-h-[36px] md:min-h-[42px] max-h-[100px] md:max-h-[120px] resize-none bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground text-xs md:text-sm",
-                isMobile ? "px-3 py-2" : "px-4 py-2.5"
+                "min-h-[36px] md:min-h-[42px] max-h-[100px] md:max-h-[120px] resize-none bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground text-xs md:text-sm cursor-text",
+                isMobile ? "px-3 py-2 touch-manipulation" : "px-4 py-2.5"
               )} 
             />
           </div>
@@ -853,7 +869,8 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
                 setShowTooltip(false);
               }}
               size="lg"
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20 touch-manipulation"
+              style={{ touchAction: 'manipulation' }}
             >
               <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
@@ -862,8 +879,8 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
 
         {/* Full screen modal on mobile */}
         <Dialog open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen}>
-          <DialogContent className="w-full h-full max-w-none max-h-none p-0 m-0 rounded-none border-0">
-            <div className="h-full w-full">
+          <DialogContent className="w-full h-full max-w-none max-h-none p-0 m-0 rounded-none border-0" style={{ touchAction: 'manipulation' }}>
+            <div className="h-full w-full" style={{ touchAction: 'manipulation' }}>
               <ChatContent />
             </div>
           </DialogContent>
