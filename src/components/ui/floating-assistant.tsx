@@ -41,6 +41,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   const [showContactForm, setShowContactForm] = useState(false);
   const [showPredefinedQuestions, setShowPredefinedQuestions] = useState(true);
   const [waitingForAgent, setWaitingForAgent] = useState(false);
+  const [hasUserTypedDirectly, setHasUserTypedDirectly] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -62,7 +63,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   const sessionId = useRef<string>('');
   const pollMessagesIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -71,7 +71,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Reset auto-close timer on user interaction
   const resetAutoCloseTimer = useCallback(() => {
     if (autoCloseTimer) {
       clearTimeout(autoCloseTimer);
@@ -79,11 +78,10 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     
     setLastMessageTime(Date.now());
     
-    // Only set auto-close if not connected to agent and not on mobile modal
     if (!isConnectedToAgent && !isMobileModalOpen) {
       const timer = setTimeout(() => {
         const timeSinceLastMessage = Date.now() - lastMessageTime;
-        if (timeSinceLastMessage >= 30000) { // 30 seconds of inactivity
+        if (timeSinceLastMessage >= 30000) {
           setIsOpen(false);
           setTimeout(() => setShowTooltip(true), 500);
         }
@@ -92,7 +90,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     }
   }, [isConnectedToAgent, isMobileModalOpen, lastMessageTime, autoCloseTimer]);
 
-  // Handle cart updates to show product suggestions
   useEffect(() => {
     const handleCartUpdate = (event: CustomEvent) => {
       const { item, action } = event.detail;
@@ -109,13 +106,11 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   }, []);
 
   const handleNewProductAdded = async (item: any) => {
-    // Add initial message about the product
     setMessages(prev => [...prev, {
       text: t('productSuggestion.newItemAdded', { productName: item.name }),
       isUser: false
     }]);
 
-    // Add suggestion message
     setTimeout(() => {
       setMessages(prev => [...prev, {
         text: t('productSuggestion.suggestSimilar'),
@@ -123,7 +118,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       }]);
     }, 1000);
 
-    // Fetch and show related products
     setTimeout(() => {
       fetchAndShowRelatedProducts(item.id);
     }, 2000);
@@ -185,7 +179,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   };
 
   useEffect(() => {
-    // Show assistant after 4 seconds
     const timer = setTimeout(() => {
       setIsVisible(true);
       setIsOpen(true);
@@ -194,7 +187,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     return () => clearTimeout(timer);
   }, [resetAutoCloseTimer]);
 
-  // Agent status checking
   useEffect(() => {
     checkAgentStatus();
     
@@ -209,7 +201,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     };
   }, [isVisible, checkAgentStatus]);
 
-  // Poll for new messages when connected to agent
   useEffect(() => {
     if (isConnectedToAgent && sessionId.current) {
       pollMessagesIntervalRef.current = setInterval(async () => {
@@ -366,10 +357,23 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       setMessage('');
       resetAutoCloseTimer();
 
+      if (!hasUserTypedDirectly && showPredefinedQuestions) {
+        setHasUserTypedDirectly(true);
+        setShowPredefinedQuestions(false);
+        
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            text: "Merci pour votre message ! Pour mieux vous aider et vous connecter directement avec notre équipe, pourriez-vous remplir ce formulaire ?",
+            isUser: false
+          }]);
+          setShowContactForm(true);
+        }, 1000);
+        return;
+      }
+
       if (sessionId.current && contactForm.name) {
         await sendTextMessage(messageText);
       } else if (waitingForAgent || isConnectedToAgent) {
-        // Show contact form if they want to talk to agent but haven't provided info
         setTimeout(() => {
           setShowContactForm(true);
           setMessages(prev => [...prev, {
@@ -378,7 +382,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
           }]);
         }, 1000);
       } else {
-        // Default response for predefined questions
         setTimeout(() => {
           setMessages(prev => [...prev, {
             text: t('defaultAnswer'),
@@ -387,7 +390,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
         }, 1000);
       }
     }
-  }, [message, t, contactForm.name, resetAutoCloseTimer, waitingForAgent, isConnectedToAgent]);
+  }, [message, t, contactForm.name, resetAutoCloseTimer, waitingForAgent, isConnectedToAgent, hasUserTypedDirectly, showPredefinedQuestions]);
 
   const sendTextMessage = async (messageText: string) => {
     try {
@@ -473,7 +476,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
           isUser: false
         }]);
         
-        // Automatically ask how can we help in French
         setTimeout(() => {
           setMessages(prev => [...prev, {
             text: "Comment pouvons-nous vous aider aujourd'hui ?",
@@ -512,7 +514,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       }]);
     }, 1000);
 
-    // Remove predefined questions after selection
     setShowPredefinedQuestions(false);
     resetAutoCloseTimer();
   };
@@ -546,7 +547,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     setIsConnectedToAgent(true);
     setShowPredefinedQuestions(false);
     
-    // Clear chat and show agent connection message
     setMessages([
       {
         text: "Parfait ! Vous êtes maintenant en contact avec l'un de nos conseillers. Votre conversation précédente a été effacée pour votre confidentialité.",
@@ -555,14 +555,12 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
       }
     ]);
 
-    // Clear auto-close timer when connected to agent
     if (autoCloseTimer) {
       clearTimeout(autoCloseTimer);
       setAutoCloseTimer(null);
     }
   };
 
-  // Clean up timers on unmount
   useEffect(() => {
     return () => {
       if (autoCloseTimer) {
@@ -659,7 +657,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
           </div>
         ))}
 
-        {/* Agent Connection Separator */}
         {isConnectedToAgent && (
           <div className="flex items-center gap-2 my-4">
             <Separator className="flex-1" />
@@ -668,7 +665,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
           </div>
         )}
 
-        {/* Agent typing indicator */}
         {agentTyping && (
           <div className="flex gap-2 items-start">
             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-r from-accent to-primary text-white">
@@ -749,7 +745,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
               </Button>
             ))}
             
-            {/* Talk to Agent Button */}
             <Button
               onClick={handleTalkToAgent}
               variant="default"
@@ -763,7 +758,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
         </div>
       )}
       
-      {/* Input section */}
       <div className="p-3 border-t border-border bg-background/95 backdrop-blur-sm">
         <div className="flex items-end gap-2">
           <input
@@ -825,7 +819,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
   if (isMobile) {
     return (
       <>
-        {/* Floating Button */}
         {!isMobileModalOpen && (
           <div className="fixed bottom-6 right-6 z-50">
             <div className="relative">
@@ -849,7 +842,6 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
           </div>
         )}
 
-        {/* Mobile Modal */}
         <Dialog open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen}>
           <DialogContent className="w-full h-full max-w-none p-0 m-0 rounded-none">
             <div className="h-full flex flex-col">
