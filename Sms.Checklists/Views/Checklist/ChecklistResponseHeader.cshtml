@@ -19,11 +19,11 @@
                     <div>
                         <span data-bind="text: ZipCode"></span> <span data-bind="text: City"></span>
                     </div>
-                    <!-- ko if: $parent.CausingContact() && $parent.CausingContact() !== $parent.CustomerContact() -->
+                    <!-- ko if: $parent.CausingContact && $parent.CausingContact !== $parent.CustomerContact -->
                     <div style="margin-top: 8px;">
                         <b>@Html.Localize("CausingContact")</b>
                     </div>
-                    <div data-bind="text: Helper.Company.getDisplayName($parent.CausingContact())"></div>
+                    <div data-bind="text: Helper.Company.getDisplayName($parent.CausingContact)"></div>
                     <!-- /ko -->
                 }
             </div>
