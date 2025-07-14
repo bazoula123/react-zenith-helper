@@ -44,6 +44,10 @@
 		{
 			get { return DynamicFormReference != null ? DynamicFormReference.Dispatch : null; }
 		}
+		public virtual Contact CausingContact
+		{
+			get { return ServiceOrder != null && ServiceOrder.Initiator != null ? ServiceOrder.Initiator.Self : null; }
+		}
 		public virtual string MaintenanceOrderGenerationMode { get; set; }
 	}
 }
