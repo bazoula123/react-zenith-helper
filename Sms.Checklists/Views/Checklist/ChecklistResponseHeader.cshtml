@@ -33,7 +33,12 @@
                     <div>
                         <b>Einsatzort</b>
                     </div>
-                    <div data-bind="text: Helper.Installation.getDisplayName($data)"></div>
+                    <div data-bind="text: Name"></div>
+                    <div data-bind="text: Street"></div>
+                    <div>
+                        <span data-bind="text: ZipCode"></span> <span data-bind="text: City"></span>
+                    </div>
+                    <div data-bind="text: Country"></div>
                 }
                 @using (Html.TemplateContext<ServiceOrderChecklistResponseViewModel>(x => x.ServiceOrder)) {
                     <!-- ko if: $parent.ServiceOrderResponsibleUser() -->
