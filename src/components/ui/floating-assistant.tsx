@@ -817,7 +817,7 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
               }}
               onFocus={handleInputFocus}
               onClick={handleInputClick}
-              onTouchStart={handleInputClick}
+              onTouchStart={(e: React.TouchEvent) => handleInputClick(e as any)}
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
